@@ -1,6 +1,6 @@
 # builder
 
-builder is a work in work in progress build automation tool with a simple and easy to use syntax.
+builder is a work in progress build automation tool with a simple and easy to use syntax.
 
  Example of a buildfile for a simple project: 
 	
