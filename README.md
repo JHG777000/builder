@@ -2,6 +2,10 @@
 
 builder is a work in progress build automation tool with a simple and easy to use syntax.
 
+## About
+
+builder provides an easy to use syntax to describe the build process, as can be seen below in the example buildfile.
+
  Example of a buildfile for a simple project: 
 	
 	project := "My Project".
@@ -57,3 +61,9 @@ Currently builder works under macOS, is untested on linux, limited testing under
 ## Toolchain Support
 
 builder plans to support gcc, clang, and msvc(only on Windows). Gcc and clang work under macOS, an install of gcc on Windows works with most cases. msvc support and full Windows support, work in progress.
+
+## Ninja
+
+builder makes use of the ninja build system: https://ninja-build.org. 
+
+Ninja need not be installed, builder will download ninja automatically.
