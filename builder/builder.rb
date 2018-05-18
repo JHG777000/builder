@@ -940,6 +940,48 @@ class Builder
      
  end
  
+ def process_build_options_string(options)
+     
+     i = 0
+     
+     j = 0
+     
+     state = false
+     
+     string = ""
+     
+     options += "   "
+     
+     while i < options.length-2
+         
+         j+=1 if options[i] == '_'
+         
+         state = true if j > 3
+         
+         j = 1 if j > 3
+         
+         state = true if options[i+1] != '_'
+         
+         string += options[i] if j == 0
+         
+         string += ' ' if j == 1 && state
+         
+         string += '-' if j == 2 && state
+         
+         string += '_' if j == 3 && state
+         
+         j = 0 if state
+         
+         state = false if state
+         
+     i+=1
+     
+     end
+     
+     string
+     
+ end
+ 
  def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,is_subproject_url)
      
      @OS = GetOS.new
@@ -947,6 +989,8 @@ class Builder
      @version = "1.0"
      
      @selected_build = selected_build
+     
+     build_options = process_build_options_string(build_options) unless build_options == nil
      
      @build_options = build_options.split unless build_options == nil
      
@@ -1016,10 +1060,8 @@ class Builder
                      options2[:selected_build] = b
                  end
                  
-                 opts.on("-i", "--input_build_options=input", "Give a string containing command-line options to be used as input for the running build.") do |o|
+                 opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |o|
                      options2[:build_options] = o
-                     puts options_string
-                     puts o
                  end
                  
                  opts.on("-h", "--help", "Prints help.") do
@@ -2482,7 +2524,7 @@ OptionParser.new do |opts|
         options[:selected_build] = b
     end
     
-    opts.on("-i", "--input_build_options=input", "Give a string containing command-line options to be used as input for the running build.") do |o|
+    opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |o|
         options[:build_options] = o
     end
     
