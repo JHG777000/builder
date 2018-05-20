@@ -542,6 +542,8 @@ class BuildNinjaFile
         #puts @ninja_string
         
         puts "Building output: '#{name}'..."
+        
+        output
    end
    
    def write_file
@@ -994,6 +996,8 @@ class Builder
      @ninja_path = ninja_path
      
      @ninjafile = nil
+     
+     @output_object_hash = Hash.new
  
  end
  
@@ -1075,7 +1079,7 @@ class Builder
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
-             builder.run options2[:filename]
+             output_objects = builder.run options2[:filename]
              
          end
          
@@ -1084,6 +1088,8 @@ class Builder
          break if i > 2
          
      end
+     
+     output_objects
      
  end
  
@@ -1101,7 +1107,7 @@ class Builder
          
      end
      
-    @ninjafile.process_output output, name
+    @output_object_hash["#{name}"] = @ninjafile.process_output output, name
      
  end
  
@@ -1180,6 +1186,8 @@ class Builder
      @buildfile.parse_file(filename)
      
      run_a_buildfile(@buildfile)
+     
+     @output_object_hash
      
  end
 
@@ -1270,11 +1278,11 @@ class Buildfile
         
         k = 0
         
-        while i < ver.length-1
+        while i < ver.length
          
-         break if j > min.length-1
+         break if j > min.length
          
-         break if k > max.length-1
+         break if k > max.length
          
          i+=1 if ver[i] == "."
          
@@ -1752,10 +1760,20 @@ class Buildfile
        
        string += "@ninjafile.run_ninja('#{line[1]}')\n" if line[0] == "output"
        
-       string += "build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
+       string += "output_objects = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
         
+    end
+    
+    def parse_grab(line)
+    
+     string = String.new
+    
+     string += "#{line[1].downcase} = output_objects['#{line[1]}']\n"
+     
+     @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+    
     end
     
     def parse_block(line)
@@ -1882,7 +1900,7 @@ class Buildfile
         
         string += " "
         
-        break if i > line.length-1 || i+1 > line.length-1 || i+2 > line.length-1
+        break if i > line.length || i+1 > line.length || i+2 > line.length
         
         end
         
@@ -2104,7 +2122,7 @@ class Buildfile
                  
                  test = get_string(line[3])
                 
-                 while j < test.length-1
+                 while j < test.length
                     
                      test[j] = "_" if is_space?(test[j])
                     
@@ -2146,7 +2164,7 @@ class Buildfile
           
           j = 0
           
-           while j < @fileinfo["project"].length-1
+           while j < @fileinfo["project"].length
               
              @fileinfo["project"][j] = "_" if is_space?(@fileinfo["project"][j])
                   
@@ -2261,6 +2279,8 @@ class Buildfile
         @parse_hash["on"] = method(:parse_on)
         
         @parse_hash["get"] = method(:parse_get)
+        
+        @parse_hash["grab"] = method(:parse_grab)
         
         @parse_hash["include"] = method(:parse_include)
         
