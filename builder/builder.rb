@@ -650,6 +650,8 @@ class BuildFunctions
         
         path = path.path_to_output if path.class.name == "Output"
         
+        puts "Running the program or script with this path: '#{path}'..."
+        
         system("./#{path}")
     end
         
