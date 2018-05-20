@@ -646,24 +646,11 @@ class BuildFunctions
     
     def run(path)
         
+        path = path unless path.class.name == "Output"
+        
         path = path.path_to_output if path.class.name == "Output"
         
-        puts "Do you wish to run the program or script with this path: '#{path}'?"
-        
-        answer = gets.chomp
-        
-        if answer == "yes"
-        
-         puts "Running the program or script with this path: '#{path}'..."
-        
-         system("./#{path}")
-         
-        else
-         
-         puts "Not running the program or script with this path: '#{path}'."
-        
-        end
-        
+        system("./#{path}")
     end
         
 end
@@ -1008,7 +995,7 @@ class Builder
  
  end
  
- def build_subproject(paths)
+ def build_subproject(name,paths)
      
      options2 = {}
      
@@ -1084,7 +1071,7 @@ class Builder
              
              builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, is_subproject_url
              
-             puts "Building subproject with buildfile: '#{options2[:filename]}'..."
+             puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
              builder.run options2[:filename]
              
@@ -1763,7 +1750,7 @@ class Buildfile
        
        string += "@ninjafile.run_ninja('#{line[1]}')\n" if line[0] == "output"
        
-       string += "build_subproject #{line[1].downcase}\n" if line[0] == "subproject"
+       string += "build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
         
