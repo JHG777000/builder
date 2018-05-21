@@ -642,6 +642,8 @@ class BuildFunctions
              exit(1)
         end
         
+        puts "Launching the program with this path: '#{output.path_to_output}'..."
+        
         system("./#{output.path_to_output}")
         
     end
@@ -1410,6 +1412,8 @@ class Buildfile
        
        @buildstring[@current_build] += "is_linux = @OS.is_linux?\n" if @buildstring.has_key?(@current_build)
        
+       @buildstring[@current_build] += "output_objects = Hash.new\n" if @buildstring.has_key?(@current_build)
+       
     end
     
     def parse_end(line)
@@ -1760,7 +1764,7 @@ class Buildfile
        
        string += "@ninjafile.run_ninja('#{line[1]}')\n" if line[0] == "output"
        
-       string += "output_objects = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
+       string += "output_objects['#{line[1]}'] = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
         
@@ -1770,7 +1774,15 @@ class Buildfile
     
      string = String.new
     
-     string += "#{line[1].downcase} = output_objects['#{line[1]}']\n"
+     unless line[2] == "from"
+        
+        puts "On line: #{@line_number}, expected 'from'."
+        
+        exit(1)
+        
+     end
+    
+     string += "#{line[1].downcase} = output_objects['#{line[3]}']['#{line[1]}']\n"
      
      @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
     
