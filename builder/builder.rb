@@ -1404,15 +1404,19 @@ class Buildfile
        
        puts "Processing build: #{@current_build}..."
        
-       @buildstring[@current_build] = "" unless @buildstring.has_key?(@current_build)
-       
-       @buildstring[@current_build] += "is_win = @OS.is_windows?\n" if @buildstring.has_key?(@current_build)
-       
-       @buildstring[@current_build] += "is_mac = @OS.is_mac?\n" if @buildstring.has_key?(@current_build)
-       
-       @buildstring[@current_build] += "is_linux = @OS.is_linux?\n" if @buildstring.has_key?(@current_build)
-       
-       @buildstring[@current_build] += "output_objects = Hash.new\n" if @buildstring.has_key?(@current_build)
+       unless @buildstring.has_key?(@current_build)
+           
+           @buildstring[@current_build] = ""
+           
+           @buildstring[@current_build] += "is_win = @OS.is_windows?\n"
+           
+           @buildstring[@current_build] += "is_mac = @OS.is_mac?\n"
+           
+           @buildstring[@current_build] += "is_linux = @OS.is_linux?\n"
+           
+           @buildstring[@current_build] += "output_objects = Hash.new\n"
+           
+       end
        
     end
     
@@ -2525,6 +2529,8 @@ class Buildfile
         next if @done_includes[an_include]
         
         @done_includes[an_include] = true
+        
+        puts "Including buildfile: '#{an_include}'..."
         
         self.parse_file an_include
     }
