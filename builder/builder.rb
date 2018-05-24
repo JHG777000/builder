@@ -505,16 +505,16 @@ class BuildNinjaFile
            
            ext = ext[ext.length-1].split(".")
            
-           @ninja_string += "build #{@path_to_build_directory}#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{source}"
+           @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{source}"
            
            @ninja_string += " \n"
            
-           @objects.push "#{@path_to_build_directory}#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}"
+           @objects.push "#{@path_to_build_directory}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}"
         }
         
-        @ninja_string += "build #{@path_to_build_directory}#{name}: " + @output_type[@outtype] + " " if @outtype == "application"
+        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}: " + @output_type[@outtype] + " " if @outtype == "application"
         
-        @ninja_string += "build #{@path_to_build_directory}#{name}.#{@libext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "library"
+        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "library"
         
         @objects.each { |object|
             
@@ -560,9 +560,9 @@ class BuildNinjaFile
         
         @ninja_string += "\n"
         
-        output.path_to_output = "#{@path_to_build_directory}#{name}" if @outtype == "application"
+        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application"
         
-        output.path_to_output = "#{@path_to_build_directory}#{name}.#{@libext[@toolchain]}" if @outtype == "library"
+        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}" if @outtype == "library"
         
         #puts @ninja_string
         
@@ -644,6 +644,12 @@ class BuildFunctions
     
        @builder.clean dir
     
+    end
+    
+    def clean_output(output)
+        
+        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output"
+        
     end
     
     def remove(file,dirname)
@@ -1807,7 +1813,7 @@ class Buildfile
        
          unless j
         
-          j = true if line[i] == ","
+          j = true if line[i] == "," || is_symbol?(line[i])
           
           string += line[i] if j
           
@@ -1877,6 +1883,48 @@ class Buildfile
      
      @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
     
+    end
+    
+    def parse_make(line)
+       
+       string = String.new
+       
+       unless line[1] == "filepath"
+           
+           puts "On line: #{@line_number}, expected 'filepath'."
+           
+           exit(1)
+           
+       end
+       
+       unless line[3] == "from"
+           
+           puts "On line: #{@line_number}, expected 'from'."
+           
+           exit(1)
+           
+       end
+       
+       unless line[5] == "to"
+           
+           puts "On line: #{@line_number}, expected 'to'."
+           
+           exit(1)
+           
+       end
+       
+       unless is_string?(line[4]) && is_string?(line[6])
+           
+           puts "On line: #{@line_number}, expected string."
+           
+           exit(1)
+           
+       end
+       
+       string += "#{line[2].downcase} = get_path_for_functions(#{line[4]}) + #{line[6]}\n"
+       
+       @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+       
     end
     
     def parse_block(line)
@@ -2385,6 +2433,8 @@ class Buildfile
         
         @parse_hash["grab"] = method(:parse_grab)
         
+        @parse_hash["make"] = method(:parse_make)
+        
         @parse_hash["include"] = method(:parse_include)
         
         @parse_hash["message"] = method(:parse_function)
@@ -2394,6 +2444,8 @@ class Buildfile
         @parse_hash["copy"] = method(:parse_function)
         
         @parse_hash["clean"] = method(:parse_function)
+        
+        @parse_hash["clean_output"] = method(:parse_function)
         
         @parse_hash["remove"] = method(:parse_function)
         
@@ -2593,7 +2645,7 @@ class Buildfile
                  else
                  
                   puts "On or near line: #{@line_number}, expected 'end of line'."
-                 
+                 puts word
                   exit(1)
                  
                  end
