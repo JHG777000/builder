@@ -30,6 +30,27 @@ gem "rubyzip"
 require "zip"
 
 class BuildNinjaFile
+    
+    def dirs(dirname,r)
+        
+        Dir.each_child(dirname){ |entry|
+            
+            next if entry[0] == '.'
+
+            unless Dir.exist?(dirname + "/" + entry)
+                
+                ext = entry.split(".")
+                
+                @objects.push  dirname + "/" + entry if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib"
+                
+                @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
+                
+            end
+            
+            dirs(dirname + "/" + entry,r) if Dir.exist?(dirname + "/" + entry) && r
+        }
+        
+    end
    
    def process_files(files)
        
@@ -42,6 +63,10 @@ class BuildNinjaFile
             @objects.push  @path_to_resources + file if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib"
             
             @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
+            
+            dirs @path_to_resources + file.chomp(".directory"), false if ext[ext.length-1] == "directory"
+            
+            dirs @path_to_resources + file.chomp(".directories"), true if ext[ext.length-1] == "directories"
            
            end
        }
@@ -768,6 +793,10 @@ end
 class Builder
     
  attr_reader :version
+ 
+ attr_reader :url_to_src
+ 
+ attr_reader :url_to_buildfile
 
  def get_ninja(project)
      
@@ -829,11 +858,61 @@ class Builder
 
      end
      
-     #FileUtils.rmdir
-     
      @ninja_path = "#{get_path('project')}.build/ninja/ninja" if @ninja_path == nil
      
      puts "Downloaded Ninja to #{@ninja_path.chomp('/ninja')}." unless init
+     
+ end
+ 
+ def get_src(url_to_src,project)
+     
+     init = false
+     
+     init = true if File.exists?("#{get_path('project')}/#{project}_src")
+     
+     puts "Downloading project: #{project} to #{get_path('project')}/#{project}_src..." unless init
+     
+     src = URI.parse(URI.encode(url_to_src)).read unless init
+     
+     Dir.mkdir("#{get_path('project')}/#{project}_src") unless File.exists?("#{get_path('project')}/#{project}_src")
+     
+     file = File.new("#{get_path('project')}/#{project}_src/#{project}_src.zip","wb") unless init
+     
+     file.write(src) unless init
+     
+     if File.exists?("#{get_path('project')}/#{project}_src/#{project}_src.zip")
+         
+         Zip::File.open("#{get_path('project')}/#{project}_src/#{project}_src.zip") do |zipfile|
+             
+             zipfile.each do |entry|
+                 
+                 unless File.exists?("#{get_path('project')}/#{project}_src/#{entry.name}")
+                     
+                     zipfile.extract(entry, "#{get_path('project')}/#{project}_src/#{entry.name}")
+                     
+                     path = "#{get_path('project')}/#{project}_src/#{entry.name}"
+                     
+                 end
+                 
+             end
+             
+         end
+         
+     end
+     
+     begin
+         
+         FileUtils.remove_file "#{get_path('project')}/#{project}_src/#{project}_src.zip" if File.exists?("#{get_path('project')}/#{project}_src/#{project}_src.zip")
+         
+         rescue
+         
+     end
+     
+     puts "Downloaded #{project} to #{path}." unless init
+     
+     @path_to_subproject = path
+     
+     path + @buildfile.filename
      
  end
  
@@ -975,7 +1054,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,is_subproject_url)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,url_to_src)
      
      @OS = GetOS.new
      
@@ -991,7 +1070,9 @@ class Builder
      
      @superproject = superproject
      
-     @is_subproject_url = is_subproject_url
+     @url_to_buildfile = url_to_buildfile
+     
+     @url_to_src = url_to_src
      
      @path_to_subproject = path_to_subproject
      
@@ -1067,9 +1148,9 @@ class Builder
              end.parse!(options_string)
              
              
-             is_subproject_url = false
+             #is_subproject_url = false
              
-             is_subproject_url =  true if paths.array[i].class.name == "URL"
+             #is_subproject_url =  true if paths.array[i].class.name == "URL"
              
              options2[:filename] = paths.array[0].array[0]
              
@@ -1077,7 +1158,7 @@ class Builder
              
              path = paths.array[0].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, is_subproject_url
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, nil, nil
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -2368,23 +2449,55 @@ class Buildfile
      
      @line_number = 0
      
-     begin
+     unless @builder.url_to_buildfile == nil
+     
+      begin
+     
+       file = StringIO.new(URI.parse(URI.encode(@builder.url_to_buildfile)).read, "r")
+     
+       rescue Exception
+     
+       puts "Given URL to buildfile is either invalid or busy."
+     
+       exit(1)
+     
+      end
+     
+     else
+     
+      begin
          
-         file = File.new(filename,"r")
+       file = File.new(filename,"r")
          
-         rescue Exception
+       rescue Exception
          
-         puts "Given buildfile does not exist."
+       puts "Given buildfile does not exist."
          
-         exit(1)
+       exit(1)
         
+      end
+     
      end
      
      file.each_line do |line|
      
      @line_number += 1
      
-     #IO.foreach(filename) do |line|
+     unless @builder.url_to_buildfile == nil
+         
+         if @fileinfo["init"]
+          
+          #download src
+          
+          #@builder.url_to_buildfile = nil
+          
+          puts "Parsing downloaded buildfile: '#{@filename}'..."
+          
+          self.parse_file @filename
+             
+         end
+         
+     end
          
      i = 0
      
@@ -2564,7 +2677,7 @@ end.parse!
 
 options[:filename] = "buildfile" if options[:filename] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, false
+builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, nil, nil
 
 #puts Dir.pwd
 
