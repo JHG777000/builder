@@ -646,6 +646,12 @@ class BuildFunctions
     
     end
     
+    def remove(file,dirname)
+    
+        FileUtils.remove_file @builder.get_path_for_functions(dirname) + file
+    
+    end
+    
     def change_working_directory_to(directory)
         
         @builder.chdir directory
@@ -2388,6 +2394,8 @@ class Buildfile
         @parse_hash["copy"] = method(:parse_function)
         
         @parse_hash["clean"] = method(:parse_function)
+        
+        @parse_hash["remove"] = method(:parse_function)
         
         @parse_hash["launch"] = method(:parse_function)
         
