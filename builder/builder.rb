@@ -648,7 +648,7 @@ class BuildFunctions
     
     def clean_output(output)
         
-        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output"
+        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output" if File.exists?(@builder.get_path(dirname)  + "#{output}_output")
         
     end
     
@@ -958,7 +958,7 @@ class Builder
      
      return nil if dirname == "working"
      
-     FileUtils.remove_dir get_path(dirname)
+     FileUtils.remove_dir get_path(dirname) if File.exists?(get_path(dirname))
      
  end
  
@@ -1174,7 +1174,7 @@ class Builder
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
-             output_objects = builder.run options2[:filename]
+             output_objects, output_paths = builder.run options2[:filename]
              
          end
          
@@ -1184,7 +1184,7 @@ class Builder
          
      end
      
-     output_objects
+     return output_objects, output_paths
      
  end
  
@@ -1282,7 +1282,15 @@ class Builder
      
      run_a_buildfile(@buildfile)
      
-     @output_object_hash
+     output_paths = Hash.new
+     
+     output_paths["project"] = get_path("project")
+     
+     output_paths["resources"] = get_path("resources")
+     
+     output_paths["build"] = get_path("build")
+     
+     return @output_object_hash, output_paths
      
  end
 
@@ -1508,6 +1516,8 @@ class Buildfile
            @buildstring[@current_build] += "is_linux = @OS.is_linux?\n"
            
            @buildstring[@current_build] += "output_objects = Hash.new\n"
+           
+           @buildstring[@current_build] += "output_paths = Hash.new\n"
            
        end
        
@@ -1861,7 +1871,7 @@ class Buildfile
        
        string += "@ninjafile.run_ninja('#{line[1]}')\n" if line[0] == "output"
        
-       string += "output_objects['#{line[1]}'] = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
+       string += "output_objects['#{line[1]}'],output_paths['#{line[1]}'] = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
         
@@ -1921,7 +1931,25 @@ class Buildfile
            
        end
        
-       string += "#{line[2].downcase} = get_path_for_functions(#{line[4]}) + #{line[6]}\n"
+       if line.length == 8
+       
+        string += "#{line[2].downcase} = get_path_for_functions(#{line[4]}) + #{line[6]}\n"
+       
+        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+       
+        return
+       
+       end
+       
+       unless line[7] == "from"
+           
+           puts "On line: #{@line_number}, expected 'from'."
+           
+           exit(1)
+           
+       end
+       
+       string += "#{line[2].downcase} = output_paths['#{line[8]}'][#{line[4]}] + #{line[6]}\n"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
        
@@ -2645,7 +2673,7 @@ class Buildfile
                  else
                  
                   puts "On or near line: #{@line_number}, expected 'end of line'."
-                 puts word
+                 
                   exit(1)
                  
                  end
