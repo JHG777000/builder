@@ -1502,6 +1502,14 @@ class Buildfile
            
        end
        
+       unless @url_to_buildfile == nil
+         
+         puts "build cannot occur before 'url_to_src'."
+         
+         exit(1)
+         
+       end
+       
        @builder.get_ninja @fileinfo["project"]
        
        unless @current_build == nil
@@ -2810,6 +2818,10 @@ OptionParser.new do |opts|
         options[:build_options] = o
     end
     
+    opts.on("-u", "--url_to_buildfile=buildfile", "Give a URL to a buildfile for a project to be downloaded and built.") do |u|
+        options[:url_to_buildfile] = u
+    end
+    
     opts.on("-h", "--help", "Prints help.") do
         puts opts
         exit
@@ -2819,7 +2831,7 @@ end.parse!
 
 options[:filename] = "buildfile" if options[:filename] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, nil
+builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile]
 
 #puts Dir.pwd
 
