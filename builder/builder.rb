@@ -254,6 +254,35 @@ class BuildNinjaFile
        
    end
    
+   def add_dollar_to_windows_filepath(path)
+   
+    string = ""
+   
+    if @OS.is_win
+   
+    path.each { |c|
+       
+       unless c == ':'
+           
+        string += c
+       
+       else
+       
+        string += '$'
+        
+        string += c
+       
+       end
+    }
+    
+    return string
+   
+    end
+    
+    path
+    
+   end
+   
    def process_output(output,name)
        
        i = 0
@@ -475,7 +504,7 @@ class BuildNinjaFile
        
        @ninja_string += "  command = #{@compiler[@toolchain]} -MMD -MF $out.d $cflags -c $in -o $out\n" unless @toolchain == "msvc"
        
-       @ninja_string += "  command = #{@compiler[@toolchain]} /showIncludes $cflags -c $in /Fo $out\n" if @toolchain == "msvc"
+       @ninja_string += "  command = #{@compiler[@toolchain]} /showIncludes $cflags -c $in /Fo$out\n" if @toolchain == "msvc"
        
        @ninja_string += "  description = compiling $out...\n"
        
@@ -487,7 +516,7 @@ class BuildNinjaFile
        
        @ninja_string += "  command = #{@linker[@toolchain]} $ldflags -o $out $in $libs\n" unless @toolchain == "msvc"
        
-       @ninja_string += "  command = #{@linker[@toolchain]} $in $libs /nologo /link $ldflags /out: $out\n" if @toolchain == "msvc"
+       @ninja_string += "  command = #{@linker[@toolchain]} $in $libs /nologo /link $ldflags /out:$out\n" if @toolchain == "msvc"
        
        @ninja_string += "  description = linking: $out...\n"
        
@@ -498,6 +527,8 @@ class BuildNinjaFile
        @ninja_string += "  command = #{@archiver[@toolchain]} $arflags /out:$out $in\n" if @toolchain == "msvc"
        
        @ninja_string += "  description = archiving: $out...\n"
+       
+       #clang -dynamic -fpic foo.c -o libhello.dylib
        
        @sources.each { |source|
            
@@ -816,6 +847,9 @@ class Builder
  attr_accessor :url_to_src
  
  attr_accessor :url_to_buildfile
+ 
+ attr_reader :path_to_subproject
+ 
 
  def get_ninja(project)
      
@@ -1407,8 +1441,6 @@ class Buildfile
          return false if ver[i].to_f < min[j].to_f
          
          return false if ver[i].to_f > max[k].to_f
-         
-         return true if ver[i].to_f > min[j].to_f && ver[i].to_f <= max[k].to_f
          
          i+=1
          
@@ -2309,7 +2341,7 @@ class Buildfile
 
         if line[1] == ':' && line[2] == '='
           
-           @builder.url_to_src = get_string(line[3])
+           @builder.url_to_src = get_string(line[3]) if @builder.url_to_src  == nil
           
           else
             
@@ -2343,6 +2375,8 @@ class Buildfile
            
            else
            
+           @project_version_max = get_string(line[3]) if line[0] == "project_version" && @downloaded
+           
             unless @fileinfo[line[0]] == get_string(line[3])
                 
                 if line[0] == "project"
@@ -2363,12 +2397,18 @@ class Buildfile
                 
                 unless test == @fileinfo[line[0]]
                 
-                 puts "On line: #{@line_number}, expected '#{@fileinfo[line[0]]}', not #{line[3]}."
+                 if @downloaded && line[0] == "project_version"
+                   
+                   #do nothing
+                   
+                 else
                 
-                 exit(1)
+                  puts "On line: #{@line_number}, expected '#{@fileinfo[line[0]]}', not #{line[3]}."
+                
+                  exit(1)
                 
                 end
-                
+               end
             end
            
            end
@@ -2421,6 +2461,10 @@ class Buildfile
         
         @builder = builder
         
+        @downloaded = false
+        
+        @save_url_to_buildfile = nil
+        
         @includes = Array.new
         
         @done_includes = Hash.new
@@ -2436,6 +2480,8 @@ class Buildfile
         @buildfile_version = "1.0"
         
         @buildfile_version_min = "1.0"
+        
+        @project_version_max = "9.9"
         
         @filename = nil
         
@@ -2625,6 +2671,24 @@ class Buildfile
      
      @line_number += 1
      
+     if @downloaded && @project_version_max != nil
+         
+         unless compare_versions("0.0",@project_version_max,@fileinfo["project_version"])
+            
+            puts "Updating project '#{@fileinfo['project']}'..."
+            
+            FileUtils.remove_dir "#{@builder.get_path('project')}#{@fileinfo['project']}_src" if File.exists?("#{@builder.get_path('project')}#{@fileinfo['project']}_src")
+            
+            @builder.url_to_buildfile = @save_url_to_buildfile
+            
+            @project_version_max = nil
+            
+            @downloaded = false
+            
+         end
+         
+     end
+     
      unless @builder.url_to_buildfile == nil
          
          if @fileinfo["init"] && @builder.url_to_src
@@ -2637,7 +2701,11 @@ class Buildfile
           
           @builder.get_src(@builder.url_to_src,@fileinfo["project"])
           
+          @save_url_to_buildfile = @builder.url_to_buildfile
+          
           @builder.url_to_buildfile = nil
+          
+          @downloaded = true
           
           puts "Parsing downloaded buildfile: '#{@filename}'..."
           
