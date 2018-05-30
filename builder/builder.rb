@@ -1242,6 +1242,8 @@ class Builder
                  
              end.parse!(options_string)
              
+             options2[:allow] = false unless @allow_extern_exec
+             
              url_to_buildfile = nil
              
              url_to_buildfile = paths.array[0].array[0] if paths.array[0].class.name == "Url"
