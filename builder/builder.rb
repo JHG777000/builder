@@ -1179,9 +1179,9 @@ class Builder
      
      options2 = {}
      
-     if paths.array.length < 2
+     if paths.array.length < 3
          
-         puts "Project needs a path and a build options string."
+         puts "Subproject needs a string, a path and a build options string."
          
          exit(1)
          

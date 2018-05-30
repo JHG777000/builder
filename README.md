@@ -44,7 +44,7 @@ builder provides an easy to use syntax to describe the build process, as can be 
 
  	  message("hello, world.\n").
 
- 	  copy("MyApp","build","project").
+ 	  copy("MyApp_output/MyApp","build","project").
 	
  	  launch(MyApp).
 
