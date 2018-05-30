@@ -1191,7 +1191,19 @@ class Builder
      
      while i < paths.array.length
          
-         if i == 0 && paths.array[i].class.name != "Files" && paths.array[i].class.name != "Url"
+         string = nil
+         
+         string = @buildfile.get_string(paths.array[0]) if paths.array[0].class.name == "String"
+         
+         if string != nil && string != "local" && string != "global"
+             
+             puts 'Subproject objects must start with the string "local" or "global."'
+             
+             exit(1)
+             
+         end
+         
+         if i == 1 && paths.array[i].class.name != "Files" && paths.array[i].class.name != "Url"
              
              puts "Project needs path given via a files object or a url object."
              
@@ -1199,7 +1211,7 @@ class Builder
              
          end
          
-         if i == 1 && ( paths.array[i] != nil && paths.array[i].class.name != "String")
+         if i == 2 && ( paths.array[i] != nil && paths.array[i].class.name != "String")
              
              puts "Build options need to be a string."
              
@@ -1207,9 +1219,9 @@ class Builder
              
          end
          
-         if i == 1
+         if i == 2
              
-             options_string = paths.array[1]
+             options_string = paths.array[2]
              
              options_string = options_string.split unless options_string == nil
              
@@ -1242,19 +1254,23 @@ class Builder
                  
              end.parse!(options_string)
              
+             project = nil
+             
+             project = get_path("project") if paths.array[0] == "local"
+             
              options2[:allow] = false unless @allow_extern_exec
              
              url_to_buildfile = nil
              
-             url_to_buildfile = paths.array[0].array[0] if paths.array[0].class.name == "Url"
+             url_to_buildfile = paths.array[1].array[0] if paths.array[1].class.name == "Url"
              
-             options2[:filename] = paths.array[0].array[0]
+             options2[:filename] = paths.array[1].array[0]
              
-             ext = paths.array[0].array[0].split("/")
+             ext = paths.array[1].array[0].split("/")
              
-             path = paths.array[0].array[0].chomp(ext[ext.length-1])
+             path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, url_to_buildfile, options2[:allow]
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -1264,7 +1280,7 @@ class Builder
          
          i+=1
          
-         break if i > 2
+         break if i >= 3
          
      end
      
