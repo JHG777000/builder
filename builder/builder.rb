@@ -712,19 +712,46 @@ class BuildFunctions
         
         puts "Launching the program with this path: '#{output.path_to_output}'..."
         
-        system("./#{output.path_to_output}")
+        unless system("./#{output.path_to_output}")
+            
+            puts "Failed to launch the program or script with this path: '#{path}'."
+            
+            exit(1)
+            
+       end
         
     end
     
     def run(path)
         
-        path = path unless path.class.name == "Output"
-        
         path = path.path_to_output if path.class.name == "Output"
         
         puts "Running the program or script with this path: '#{path}'..."
         
-        system("./#{path}")
+        unless system("./#{path}")
+            
+            unless @builder.allow_extern_exec
+            
+             puts "Failed to run the program or script with this path: '#{path}'."
+            
+             exit(1)
+             
+            else
+            
+             unless system("#{path}")
+                
+                puts "Failed to run the program or script with this path: '#{path}'."
+                
+                exit(1)
+                
+             end
+            
+            end
+            
+        end
+        
+        puts "Ran the program or script with this path: '#{path}'..."
+        
     end
         
 end
@@ -843,6 +870,8 @@ end
 class Builder
     
  attr_reader :version
+ 
+ attr_reader :allow_extern_exec
  
  attr_accessor :url_to_src
  
@@ -1112,7 +1141,9 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec)
+     
+     #init builder
      
      @OS = GetOS.new
      
@@ -1131,6 +1162,8 @@ class Builder
      @url_to_src = nil
      
      @url_to_buildfile = url_to_buildfile
+     
+     @allow_extern_exec = allow_extern_exec
      
      @path_to_subproject = path_to_subproject
      
@@ -1198,6 +1231,10 @@ class Builder
                      options2[:build_options] = o
                  end
                  
+                 opts.on("-a", "--allow_extern_exec", "Allow execution of external programs or scripts via the run function.") do |a|
+                     options2[:allow] = a
+                 end
+                 
                  opts.on("-h", "--help", "Prints help.") do
                      puts opts
                      exit
@@ -1215,7 +1252,7 @@ class Builder
              
              path = paths.array[0].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, url_to_buildfile
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], get_path("project"), path, url_to_buildfile, options2[:allow]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -2890,6 +2927,10 @@ OptionParser.new do |opts|
         options[:url_to_buildfile] = u
     end
     
+    opts.on("-a", "--allow_extern_exec", "Allow execution of external programs or scripts via the run function.") do |a|
+        options[:allow] = a
+    end
+    
     opts.on("-h", "--help", "Prints help.") do
         puts opts
         exit
@@ -2899,7 +2940,7 @@ end.parse!
 
 options[:filename] = "buildfile" if options[:filename] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile]
+builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow]
 
 #puts Dir.pwd
 
