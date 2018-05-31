@@ -238,7 +238,11 @@ class BuildNinjaFile
        
        @path_to_project_directory = project + "/" if superproject == nil
        
-       @path_to_build_directory = @path_to_project_directory + ".build/#{project}/"
+       @path_to_build_directory = @path_to_project_directory + ".build/#{project}/windows/" if @OS.is_windows?
+       
+       @path_to_build_directory = @path_to_project_directory + ".build/#{project}/mac/" if @OS.is_mac?
+       
+       @path_to_build_directory = @path_to_project_directory + ".build/#{project}/linux/" if @OS.is_linux?
        
        @path_to_ninja_directory = @path_to_project_directory + ".build/ninja/"
        
@@ -679,7 +683,7 @@ class BuildFunctions
     
     def clean_output(output)
         
-        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output" if File.exists?(@builder.get_path(dirname)  + "#{output}_output")
+        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output" if File.exists?(@builder.get_path("build")  + "#{output}_output")
         
     end
     
@@ -1076,6 +1080,12 @@ class Builder
      path_to_project_directory = @buildfile.fileinfo["project"] + "/" if @superproject == nil
      
      path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/"
+     
+     path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/windows/" if @OS.is_windows?
+     
+     path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/mac/" if @OS.is_mac?
+     
+     path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/linux/" if @OS.is_linux?
      
      path_to_ninja_directory = path_to_project_directory + ".build/ninja/"
      
