@@ -718,11 +718,13 @@ class BuildFunctions
         
         unless system("./#{output.path_to_output}")
             
-            puts "Failed to launch the program or script with this path: '#{path}'."
+            puts "Failed to launch the program or script with this path: '#{output.path_to_output}'."
             
             exit(1)
             
        end
+        
+        puts "Launched the program or script with this path: '#{output.path_to_output}'."
         
     end
     
@@ -754,7 +756,7 @@ class BuildFunctions
             
         end
         
-        puts "Ran the program or script with this path: '#{path}'..."
+        puts "Ran the program or script with this path: '#{path}'."
         
     end
         
