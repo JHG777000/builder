@@ -220,7 +220,7 @@ class BuildNinjaFile
        
    end
    
-   def initialize(buildfile,project,superproject,path_to_project_files,ninja_path)
+   def initialize(builder,buildfile,project,superproject,path_to_project_files,ninja_path)
        
        #path_to_project_files --> input
        
@@ -228,7 +228,15 @@ class BuildNinjaFile
        
        @OS = GetOS.new
        
+       @builder = builder
+       
        @buildfile = buildfile
+       
+       @superproject = nil
+       
+       ext = superproject.split("/") unless superproject == nil
+       
+       @superproject = ext[ext.length-1] unless superproject == nil
        
        @path_to_resources = path_to_project_files
        
@@ -610,6 +618,17 @@ class BuildNinjaFile
        
        puts "Generating Ninja file..."
        
+       unless File.exists?("#{@path_to_ninja}")
+           
+             FileUtils.remove_dir @builder.ninja_path.chomp("ninja")
+            
+             puts "Ninja Missing..."
+             
+             puts "Relaunch builder and try again."
+             
+             exit(1)
+       end
+       
        file = File.new(@path_to_ninja_directory + "build.ninja","w")
        
        file.write(@ninja_string)
@@ -730,7 +749,13 @@ class BuildFunctions
     
     def run(path)
         
-        path = path.path_to_output if path.class.name == "Output"
+        unless path.class.name == "String"
+            
+            puts "The 'run' function requires a path to be string."
+            
+            exit(1)
+            
+        end
         
         puts "Running the program or script with this path: '#{path}'..."
         
@@ -876,6 +901,8 @@ end
 class Builder
     
  attr_reader :version
+ 
+ attr_reader :ninja_path
  
  attr_reader :allow_extern_exec
  
@@ -1304,7 +1331,7 @@ class Builder
      
      i = 0
      
-     @ninjafile = BuildNinjaFile.new @buildfile, @buildfile.fileinfo["project"], @superproject, @path_to_subproject, @ninja_path if @ninjafile == nil
+     @ninjafile = BuildNinjaFile.new self, @buildfile, @buildfile.fileinfo["project"], @superproject, @path_to_subproject, @ninja_path if @ninjafile == nil
      
      unless output.type == "output"
          
