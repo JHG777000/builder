@@ -620,7 +620,7 @@ class BuildNinjaFile
        
        unless File.exists?("#{@path_to_ninja}")
            
-             FileUtils.remove_dir @builder.ninja_path.chomp("ninja")
+             FileUtils.remove_dir @path_to_ninja.chomp("ninja")
             
              puts "Ninja Missing..."
              
@@ -901,8 +901,6 @@ end
 class Builder
     
  attr_reader :version
- 
- attr_reader :ninja_path
  
  attr_reader :allow_extern_exec
  
@@ -1282,7 +1280,7 @@ class Builder
                      options2[:build_options] = o
                  end
                  
-                 opts.on("-a", "--allow_extern_exec", "Allow execution of external programs or scripts via the run function.") do |a|
+                 opts.on("-a", "--allow_extern_exec", "Allow execution of external(outside working directory) programs or scripts via the run function.") do |a|
                      options2[:allow] = a
                  end
                  
@@ -2984,7 +2982,7 @@ OptionParser.new do |opts|
         options[:url_to_buildfile] = u
     end
     
-    opts.on("-a", "--allow_extern_exec", "Allow execution of external programs or scripts via the run function.") do |a|
+    opts.on("-a", "--allow_extern_exec", "Allow execution of external(outside working directory) programs or scripts via the run function.") do |a|
         options[:allow] = a
     end
     
