@@ -904,6 +904,8 @@ class Builder
  
  attr_reader :allow_extern_exec
  
+ attr_accessor :download_project
+ 
  attr_accessor :url_to_src
  
  attr_accessor :url_to_buildfile
@@ -1178,7 +1180,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project)
      
      #init builder
      
@@ -1201,6 +1203,8 @@ class Builder
      @url_to_buildfile = url_to_buildfile
      
      @allow_extern_exec = allow_extern_exec
+     
+     @download_project = download_project
      
      @path_to_subproject = path_to_subproject
      
@@ -1266,7 +1270,7 @@ class Builder
              
              OptionParser.new do |opts|
                  
-                 opts.banner = "Usage: ruby builder.rb [options]"
+                 opts.banner = "Usage: builder [options]"
                  
                  opts.on("-f", "--filename=name", "Filename of the buildfile. Default filename is 'buildfile'.") do |f|
                      options2[:filename] = f
@@ -1278,6 +1282,10 @@ class Builder
                  
                  opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |o|
                      options2[:build_options] = o
+                 end
+                 
+                 opts.on("-d", "--download_project", "Download the project from the given buildfile, copy the given buildfile into project, build with given buildfile.") do |d|
+                     options2[:download_project] = d
                  end
                  
                  opts.on("-a", "--allow_extern_exec", "Allow execution of external(outside working directory) programs or scripts via the run function.") do |a|
@@ -1307,7 +1315,7 @@ class Builder
              
              path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow]
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -1928,7 +1936,7 @@ class Buildfile
      
      string += "OptionParser.new do |opts|\n"
      
-     string += "opts.banner = 'Usage: ruby builder.rb -i [build_options]'\n"
+     string += "opts.banner = 'Usage: builder -i [build_options]'\n"
      
      string += "opts.on('-h', '--help', 'Prints help.') do\n"
      
@@ -2781,6 +2789,32 @@ class Buildfile
          
      end
      
+     if @builder.url_to_buildfile == nil && @builder.download_project
+         
+         if @fileinfo["init"] && @builder.url_to_src
+             
+             ext = @filename.split("/")
+             
+             @filename = ext[ext.length-1]
+             
+             @builder.get_ninja @fileinfo["project"]
+             
+             @builder.get_src(@builder.url_to_src,@fileinfo["project"])
+             
+             FileUtils.copy_file filename, @filename
+             
+             @builder.download_project = false
+             
+             puts "Parsing buildfile for downloaded project: '#{@filename}'..."
+             
+             self.parse_file @filename
+             
+             return
+    
+         end
+         
+     end
+     
      unless @builder.url_to_buildfile == nil
          
          if @fileinfo["init"] && @builder.url_to_src
@@ -2964,7 +2998,7 @@ end
 
 OptionParser.new do |opts|
     
-    opts.banner = "Usage: ruby builder.rb [options]"
+    opts.banner = "Usage: builder [options]"
     
     opts.on("-f", "--filename=name", "Filename of the buildfile. Default filename is 'buildfile'.") do |f|
         options[:filename] = f
@@ -2982,6 +3016,10 @@ OptionParser.new do |opts|
         options[:url_to_buildfile] = u
     end
     
+    opts.on("-d", "--download_project", "Download the project from the given buildfile, copy the given buildfile into project, build with given buildfile.") do |d|
+        options[:download_project] = d
+    end
+    
     opts.on("-a", "--allow_extern_exec", "Allow execution of external(outside working directory) programs or scripts via the run function.") do |a|
         options[:allow] = a
     end
@@ -2995,7 +3033,7 @@ end.parse!
 
 options[:filename] = "buildfile" if options[:filename] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow]
+builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow], options[:download_project]
 
 #puts Dir.pwd
 
