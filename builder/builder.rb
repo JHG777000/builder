@@ -1284,7 +1284,7 @@ class Builder
                      options2[:build_options] = o
                  end
                  
-                 opts.on("-d", "--download_project", "Download the project from the given buildfile, copy the given buildfile into project, build with given buildfile.") do |d|
+                 opts.on("-d", "--download_project", "Download the project from the given buildfile, build with the given buildfile.") do |d|
                      options2[:download_project] = d
                  end
                  
@@ -2801,15 +2801,11 @@ class Buildfile
              
              @builder.get_src(@builder.url_to_src,@fileinfo["project"])
              
-             FileUtils.copy_file filename, @filename
-             
              @builder.download_project = false
              
-             puts "Parsing buildfile for downloaded project: '#{@filename}'..."
+             puts "Parsing buildfile for downloaded project: '#{filename}'..."
              
-             self.parse_file @filename
-             
-             return
+             @filename = filename
     
          end
          
@@ -3016,7 +3012,7 @@ OptionParser.new do |opts|
         options[:url_to_buildfile] = u
     end
     
-    opts.on("-d", "--download_project", "Download the project from the given buildfile, copy the given buildfile into project, build with given buildfile.") do |d|
+    opts.on("-d", "--download_project", "Download the project from the given buildfile, build with the given buildfile.") do |d|
         options[:download_project] = d
     end
     
