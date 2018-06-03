@@ -1180,7 +1180,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force)
      
      #init builder
      
@@ -1205,6 +1205,10 @@ class Builder
      @allow_extern_exec = allow_extern_exec
      
      @download_project = download_project
+     
+     @local_subprojects_force = local_subprojects_force
+     
+     @global_subprojects_force = global_subprojects_force
      
      @path_to_subproject = path_to_subproject
      
@@ -1292,6 +1296,14 @@ class Builder
                      options2[:allow] = a
                  end
                  
+                 opts.on("-l", "--local_subprojects_force", "Force all subprojects to be local.") do |l|
+                     options2[:local_subprojects_force] = l
+                 end
+                 
+                 opts.on("-g", "--global_subprojects_force", "Force all subprojects of this project to be global.") do |g|
+                     options2[:global_subprojects_force] = g
+                 end
+                 
                  opts.on("-h", "--help", "Prints help.") do
                      puts opts
                      exit
@@ -1301,7 +1313,13 @@ class Builder
              
              project = nil
              
-             project = get_path("project") if paths.array[0] == "local"
+             project = get_path("project") if paths.array[0] == "local" || @local_subprojects_force
+             
+             project = nil if @global_subprojects_force
+             
+             options2[:local_subprojects_force] = true if @local_subprojects_force
+             
+             options2[:global_subprojects_force] = false if @local_subprojects_force
              
              options2[:allow] = false unless @allow_extern_exec
              
@@ -1315,7 +1333,7 @@ class Builder
              
              path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project]
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -3020,6 +3038,14 @@ OptionParser.new do |opts|
         options[:allow] = a
     end
     
+    opts.on("-l", "--local_subprojects_force", "Force all subprojects to be local.") do |l|
+        options[:local_subprojects_force] = l
+    end
+    
+    opts.on("-g", "--global_subprojects_force", "Force all subprojects of this project to be global.") do |g|
+        options[:global_subprojects_force] = g
+    end
+    
     opts.on("-h", "--help", "Prints help.") do
         puts opts
         exit
@@ -3029,7 +3055,9 @@ end.parse!
 
 options[:filename] = "buildfile" if options[:filename] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow], options[:download_project]
+options[:filename] = options[:url_to_buildfile] unless options[:url_to_buildfile] == nil
+
+builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force]
 
 #puts Dir.pwd
 
