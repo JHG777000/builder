@@ -203,6 +203,32 @@ class BuildNinjaFile
                }
                
            end
+           
+           if t.type == "dlinker"
+               
+               t.array.each { |flag|
+                   
+                   if flag.class.name == "String"
+                       
+                       @dlinker_flags += flag
+                       
+                       @dlinker_flags += " "
+                       
+                       next
+                       
+                   end
+                   
+                   if flag.type == "path"
+                       
+                       flag.array.each { |p|
+                           
+                           @dlinker_path = p
+                       }
+                       
+                   end
+               }
+               
+           end
        }
        
        if @toolchain == nil
@@ -311,6 +337,8 @@ class BuildNinjaFile
        
        @archiver_flags = ""
        
+       @dlinker_flags = ""
+       
        @toolchain = nil
        
        @objects = Array.new
@@ -357,6 +385,18 @@ class BuildNinjaFile
        
        @archiver["msvc"] = "lib"
        
+       @dlinker = Hash.new
+       
+       @dlinker["clang"] = "clang"
+       
+       @dlinker["clang++"] = "clang++"
+       
+       @dlinker["gcc"] = "gcc"
+       
+       @dlinker["g++"] = "g++"
+       
+       @dlinker["msvc"] = "cl"
+       
        @objext = Hash.new
        
        @objext["clang"] = "o"
@@ -380,6 +420,16 @@ class BuildNinjaFile
        @libext["g++"] = "a"
        
        @libext["msvc"] = "lib"
+       
+       @dylibext = Hash.new
+       
+       @dylibext["clang"] = @dylibext["clang++"] = @dylibext["gcc"] = @dylibext["g++"] = "dylib" if @OS.is_mac?
+       
+       @dylibext["clang"] = @dylibext["clang++"] = @dylibext["gcc"] = @dylibext["g++"] = "so" if @OS.is_linux?
+       
+       @dylibext["clang"] = @dylibext["clang++"] = @dylibext["gcc"] = @dylibext["g++"] = "dll" if @OS.is_windows?
+       
+       @dylibext["msvc"] = "dll"
        
        
        @has_toolchain = Hash.new
@@ -414,13 +464,15 @@ class BuildNinjaFile
        
        @output_type["library"] = "archive_#{name}"
        
+       @output_type["dynamic_library"] = "generate_#{name}"
+       
        output.array.each { |o|
 
         if i == 0
         
-         unless o.class.name == "String" && (o == "application" || o == "library")
+         unless o.class.name == "String" && (o == "application" || o == "library" || o == "dynamic_library")
              
-             puts 'Expected string of "application" or "library" in output objects\'s first argument.'
+             puts 'Expected string of "application" or "library" or "dynamic_library" in output objects\'s first argument.'
              
              exit(1)
              
@@ -458,6 +510,8 @@ class BuildNinjaFile
        
        @archiver[@toolchain] = @archiver_path unless @archiver_path == nil
        
+       @dlinker[@toolchain] = @dlinker_path unless @dlinker_path == nil
+       
        deps_toolchain = @toolchain
        
        deps_toolchain = "gcc" if deps_toolchain == "clang" || deps_toolchain == "clang++" || deps_toolchain == "g++"
@@ -483,6 +537,12 @@ class BuildNinjaFile
        @ninja_string += "arflags = "
        
        @ninja_string += @archiver_flags
+       
+       @ninja_string += "\n"
+       
+       @ninja_string += "dlflags = "
+       
+       @ninja_string += @dlinker_flags
        
        @ninja_string += "\n"
        
@@ -540,7 +600,15 @@ class BuildNinjaFile
        
        @ninja_string += "  description = archiving: $out...\n"
        
-       #clang -dynamic -fpic foo.c -o libhello.dylib
+       @ninja_string += "rule generate_#{name}\n"
+       
+       @ninja_string += "  command = #{@dlinker[@toolchain]} -shared -fpic $dlflags $in -o $out\n" if @toolchain != "msvc" && !@OS.is_windows?
+       
+       @ninja_string += "  command = #{@dlinker[@toolchain]} -shared -fpic $dlflags $in -o $out --out-implib $olib\n" if @toolchain != "msvc" && @OS.is_windows?
+       
+       @ninja_string += "  command = #{@dlinker[@toolchain]} /LD $dlflags $in /Fe:$out\n" if @toolchain == "msvc"
+       
+       @ninja_string += "  description = generating: $out...\n"
        
        @sources.each { |source|
            
@@ -558,6 +626,8 @@ class BuildNinjaFile
         @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}: " + @output_type[@outtype] + " " if @outtype == "application"
         
         @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "library"
+        
+        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}.#{@dylibext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "dynamic_library"
         
         @objects.each { |object|
             
@@ -595,6 +665,33 @@ class BuildNinjaFile
                 
             end
             
+            if ext[ext.length-1] == "dll"
+                
+                object.chomp!(".dll")
+                
+                object += ".#{@libext[@toolchain]}"
+                
+            end
+            
+            if ext[ext.length-1] == "so"
+                
+                object.chomp!(".so")
+                
+                object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
+                
+                object += ".#{@libext[@toolchain]}" if @OS.is_windows?
+                
+            end
+            
+            if ext[ext.length-1] == "dylib"
+                
+                object.chomp!(".dylib")
+                
+                object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
+                
+                object += ".#{@libext[@toolchain]}" if @OS.is_windows?
+                
+            end
             
             @ninja_string += object
             
@@ -603,9 +700,13 @@ class BuildNinjaFile
         
         @ninja_string += "\n"
         
+        @ninja_string += " olib = #{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
+        
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application"
         
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}" if @outtype == "library"
+        
+        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.#{@dylibext[@toolchain]}" if @outtype == "dynamic_library"
         
         #puts @ninja_string
         
