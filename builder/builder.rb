@@ -840,6 +840,8 @@ class BuildFunctions
             
             puts "Failed to launch the program or script with this path: '#{output.path_to_output}'."
             
+            puts "Builder shutting down..."
+            
             exit(1)
             
        end
@@ -849,6 +851,8 @@ class BuildFunctions
     end
     
     def run(path)
+        
+        failed_to_run = false
         
         unless path.class.name == "String"
             
@@ -865,16 +869,18 @@ class BuildFunctions
             unless @builder.allow_extern_exec
             
              puts "Failed to run the program or script with this path: '#{path}'."
-            
-             exit(1)
+             
+             failed_to_run = true
              
             else
+            
+             failed_to_run = false
             
              unless system("#{path}")
                 
                 puts "Failed to run the program or script with this path: '#{path}'."
                 
-                exit(1)
+                failed_to_run = true
                 
              end
             
@@ -882,7 +888,7 @@ class BuildFunctions
             
         end
         
-        puts "Ran the program or script with this path: '#{path}'."
+        puts "Ran the program or script with this path: '#{path}'." unless failed_to_run
         
     end
         
