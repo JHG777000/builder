@@ -1024,9 +1024,9 @@ class Builder
      
      init = false
      
-     init = true if File.exists?("#{project}/.build/ninja") || @ninja_path != nil
+     init = true if File.exists?("#{get_path('project')}/.build/ninja") || @ninja_path != nil
      
-     puts "Downloading Ninja to #{project}/.build/ninja..." unless init
+     puts "Downloading Ninja to #{get_path('project')}/.build/ninja..." unless init
      
      if @OS.is_windows?
          ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip"
@@ -1287,7 +1287,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory)
      
      #init builder
      
@@ -1316,6 +1316,8 @@ class Builder
      @local_subprojects_force = local_subprojects_force
      
      @global_subprojects_force = global_subprojects_force
+     
+     @output_directory = output_directory
      
      @path_to_subproject = path_to_subproject
      
@@ -1391,8 +1393,8 @@ class Builder
                      options2[:selected_build] = b
                  end
                  
-                 opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |o|
-                     options2[:build_options] = o
+                 opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |i|
+                     options2[:build_options] = i
                  end
                  
                  opts.on("-d", "--download_project", "Download the project from the given buildfile, build with the given buildfile.") do |d|
@@ -1424,6 +1426,8 @@ class Builder
              
              project = nil if @global_subprojects_force
              
+             project = @output_directory if project == nil && @output_directory
+             
              options2[:local_subprojects_force] = true if @local_subprojects_force
              
              options2[:global_subprojects_force] = false if @local_subprojects_force
@@ -1440,7 +1444,7 @@ class Builder
              
              path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force]
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force], @output_directory
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -3129,8 +3133,8 @@ OptionParser.new do |opts|
         options[:selected_build] = b
     end
     
-    opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |o|
-        options[:build_options] = o
+    opts.on("-i", "--input_build_options=input", "Give a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '__t_gcc'. One underscore is space, two is '-', three is '_', four is reset.") do |i|
+        options[:build_options] = i
     end
     
     opts.on("-u", "--url_to_buildfile=buildfile", "Give a URL to a buildfile for a project to be downloaded and built.") do |u|
@@ -3153,6 +3157,10 @@ OptionParser.new do |opts|
         options[:global_subprojects_force] = g
     end
     
+    opts.on("-o", "--output_directory=output", "Set the output directory(the directory where the project is built), defaults to the current working directory.") do |o|
+        options[:output_directory] = o
+    end
+    
     opts.on("-h", "--help", "Prints help.") do
         puts opts
         exit
@@ -3164,7 +3172,11 @@ options[:filename] = "buildfile" if options[:filename] == nil
 
 options[:filename] = options[:url_to_buildfile] unless options[:url_to_buildfile] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], nil, nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force]
+options[:output_directory] = options[:output_directory] + "/" unless options[:output_directory] == nil
+
+Dir.mkdir("#{options[:output_directory]}") unless File.exists?("#{options[:output_directory]}") unless options[:output_directory] == nil
+
+builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory]
 
 #puts Dir.pwd
 
