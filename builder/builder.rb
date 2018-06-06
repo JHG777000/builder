@@ -296,7 +296,7 @@ class BuildNinjaFile
    
     string = ""
    
-    if @OS.is_win
+    if @OS.is_windows?
    
     path.each { |c|
        
@@ -616,18 +616,18 @@ class BuildNinjaFile
            
            ext = ext[ext.length-1].split(".")
            
-           @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{source}"
+           @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{source}"
            
            @ninja_string += " \n"
            
-           @objects.push "#{@path_to_build_directory}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}"
+           @objects.push "#{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}"
         }
         
-        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}: " + @output_type[@outtype] + " " if @outtype == "application"
+        @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}: " + @output_type[@outtype] + " " if @outtype == "application"
         
-        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "library"
+        @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}.#{@libext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "library"
         
-        @ninja_string += "build #{@path_to_build_directory}#{name}_output/#{name}.#{@dylibext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "dynamic_library"
+        @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}.#{@dylibext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "dynamic_library"
         
         @objects.each { |object|
             
@@ -693,14 +693,14 @@ class BuildNinjaFile
                 
             end
             
-            @ninja_string += object
+            @ninja_string += add_dollar_to_windows_filepath(object)
             
             @ninja_string += " "
         }
         
         @ninja_string += "\n"
         
-        @ninja_string += " olib = #{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
+        @ninja_string += " olib = #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
         
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application"
         
