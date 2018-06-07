@@ -1,0 +1,1 @@
+ruby %HOMEDRIVE%%HOMEPATH%/builder/builder/builder.rb %*

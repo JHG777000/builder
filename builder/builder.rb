@@ -294,24 +294,29 @@ class BuildNinjaFile
    
    def add_dollar_to_windows_filepath(path)
    
+    i = 0     
+
     string = ""
    
     if @OS.is_windows?
    
-    path.each { |c|
+    while i < path.length
        
-       unless c == ':'
+       unless path[i] == ':'
            
-        string += c
+        string += path[i]
        
        else
        
         string += '$'
         
-        string += c
+        string += path[i]
        
        end
-    }
+
+      i+=1
+
+    end
     
     return string
    
@@ -1080,8 +1085,10 @@ class Builder
 
      end
      
-     @ninja_path = "#{get_path('project')}.build/ninja/ninja" if @ninja_path == nil
+     @ninja_path = "#{get_path('project')}.build/ninja/ninja" if @ninja_path == nil && !@OS.is_windows?
      
+@ninja_path = "#{get_path('project')}.build/ninja/ninja.exe" if @ninja_path == nil && @OS.is_windows?
+
      puts "Downloaded Ninja to #{@ninja_path.chomp('/ninja')}." unless init
      
  end
