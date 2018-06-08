@@ -278,7 +278,11 @@ class BuildNinjaFile
        
        @path_to_build_directory = @path_to_project_directory + ".build/#{project}/linux/" if @OS.is_linux?
        
-       @path_to_ninja_directory = @path_to_project_directory + ".build/ninja/"
+       @path_to_ninja_directory = @path_to_project_directory + ".build/ninja/windows/" if @OS.is_windows?
+       
+       @path_to_ninja_directory = @path_to_project_directory + ".build/ninja/mac/" if @OS.is_mac?
+       
+       @path_to_ninja_directory = @path_to_project_directory + ".build/ninja/linux/" if @OS.is_linux?
        
        @path_to_ninja = ninja_path
        
@@ -299,9 +303,9 @@ class BuildNinjaFile
     string = ""
    
     if @OS.is_windows?
-   
+  
     while i < path.length
-       
+      
        unless path[i] == ':'
            
         string += path[i]
@@ -609,7 +613,7 @@ class BuildNinjaFile
        
        @ninja_string += "  command = #{@dlinker[@toolchain]} -shared -fpic $dlflags $in -o $out\n" if @toolchain != "msvc" && !@OS.is_windows?
        
-       @ninja_string += "  command = #{@dlinker[@toolchain]} -shared -fpic $dlflags $in -o $out --out-implib $olib\n" if @toolchain != "msvc" && @OS.is_windows?
+       @ninja_string += "  command = #{@dlinker[@toolchain]} -shared -fpic $dlflags $in -o $out -Wl,--out-implib=$olib\n" if @toolchain != "msvc" && @OS.is_windows?
        
        @ninja_string += "  command = #{@dlinker[@toolchain]} /LD $dlflags $in /Fe:$out\n" if @toolchain == "msvc"
        
@@ -621,7 +625,7 @@ class BuildNinjaFile
            
            ext = ext[ext.length-1].split(".")
            
-           @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{source}"
+           @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{add_dollar_to_windows_filepath(source)}"
            
            @ninja_string += " \n"
            
@@ -634,13 +638,15 @@ class BuildNinjaFile
         
         @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}.#{@dylibext[@toolchain]}: " + @output_type[@outtype] + " " if @outtype == "dynamic_library"
         
+        @objects.reverse!
+        
         @objects.each { |object|
             
             ext = object.split(".")
             
             if ext[ext.length-1] == "o"
                 
-                object.chomp!(".o")
+                object = object.chomp(".o")
                 
                 object += ".#{@objext[@toolchain]}"
                 
@@ -648,7 +654,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "a"
                 
-                object.chomp!(".a")
+               object = object.chomp(".a")
                 
                 object += ".#{@libext[@toolchain]}"
                 
@@ -656,7 +662,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "obj"
                 
-                object.chomp!(".obj")
+                object = object.chomp(".obj")
                 
                 object += ".#{@objext[@toolchain]}"
                 
@@ -664,7 +670,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "lib"
                 
-               object.chomp!(".lib")
+               object = object.chomp(".lib")
                
                object += ".#{@libext[@toolchain]}"
                 
@@ -672,7 +678,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "dll"
                 
-                object.chomp!(".dll")
+                object = object.chomp(".dll")
                 
                 object += ".#{@libext[@toolchain]}"
                 
@@ -680,7 +686,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "so"
                 
-                object.chomp!(".so")
+                object = object.chomp(".so")
                 
                 object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
                 
@@ -690,7 +696,7 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "dylib"
                 
-                object.chomp!(".dylib")
+                object = object.chomp(".dylib")
                 
                 object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
                 
@@ -699,13 +705,13 @@ class BuildNinjaFile
             end
             
             @ninja_string += add_dollar_to_windows_filepath(object)
-            
+           
             @ninja_string += " "
         }
-        
+       
         @ninja_string += "\n"
         
-        @ninja_string += " olib = #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
+        @ninja_string += " olib = #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}.#{@libext[@toolchain]} \n" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
         
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application"
         
@@ -726,7 +732,9 @@ class BuildNinjaFile
        
        unless File.exists?("#{@path_to_ninja}")
            
-             FileUtils.remove_dir @path_to_ninja.chomp("ninja")
+             FileUtils.remove_dir @path_to_ninja.chomp("ninja") unless @OS.is_windows?
+
+             FileUtils.remove_dir @path_to_ninja.chomp("ninja.exe") if @OS.is_windows?
             
              puts "Ninja Missing..."
              
@@ -1029,9 +1037,9 @@ class Builder
      
      init = false
      
-     init = true if File.exists?("#{get_path('project')}/.build/ninja") || @ninja_path != nil
+     init = true if File.exists?("#{get_path('project')}.build/ninja") || @ninja_path != nil
      
-     puts "Downloading Ninja to #{get_path('project')}/.build/ninja..." unless init
+     puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      
      if @OS.is_windows?
          ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip"
@@ -1055,19 +1063,21 @@ class Builder
      
      Dir.mkdir("#{get_path('project')}/.build/ninja") unless File.exists?("#{get_path('project')}/.build/ninja")
      
-     file = File.new("#{get_path('project')}/.build/ninja/ninja.zip","wb") unless init
+     Dir.mkdir("#{get_path('ninja')}") unless File.exists?("#{get_path('ninja')}")
+     
+     file = File.new("#{get_path('ninja')}ninja.zip","wb") unless init
      
      file.write(ninja) unless init
      
-     if File.exists?("#{get_path('project')}/.build/ninja/ninja.zip")
+     if File.exists?("#{get_path('ninja')}ninja.zip")
      
-       Zip::File.open("#{get_path('project')}/.build/ninja/ninja.zip") do |zipfile|
+       Zip::File.open("#{get_path('ninja')}ninja.zip") do |zipfile|
          
            zipfile.each do |entry|
              
-               unless File.exists?("#{get_path('project')}/.build/ninja/#{entry.name}")
+               unless File.exists?("#{get_path('ninja')}#{entry.name}")
                  
-                   zipfile.extract(entry, "#{get_path('project')}/.build/ninja/#{entry.name}")
+                   zipfile.extract(entry, "#{get_path('ninja')}#{entry.name}")
                  
                end
              
@@ -1079,17 +1089,19 @@ class Builder
      
      begin
 
-      FileUtils.remove_file "#{get_path('project')}/.build/ninja/ninja.zip" if File.exists?("#{get_path('project')}/.build/ninja/ninja.zip")
+      FileUtils.remove_file "#{get_path('ninja')}ninja.zip" if File.exists?("#{get_path('ninja')}ninja.zip")
 
       rescue
 
      end
      
-     @ninja_path = "#{get_path('project')}.build/ninja/ninja" if @ninja_path == nil && !@OS.is_windows?
+     @ninja_path = "#{get_path('ninja')}ninja" if @ninja_path == nil && !@OS.is_windows?
      
-@ninja_path = "#{get_path('project')}.build/ninja/ninja.exe" if @ninja_path == nil && @OS.is_windows?
+     @ninja_path = "#{get_path('ninja')}ninja.exe" if @ninja_path == nil && @OS.is_windows?
 
-     puts "Downloaded Ninja to #{@ninja_path.chomp('/ninja')}." unless init
+     puts "Downloaded Ninja to #{@ninja_path.chomp('/ninja')}." if !init && !@OS.is_windows?
+     
+     puts "Downloaded Ninja to #{@ninja_path.chomp('/ninja.exe')}." if !init && @OS.is_windows?
      
  end
  
@@ -1230,7 +1242,11 @@ class Builder
      
      path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/linux/" if @OS.is_linux?
      
-     path_to_ninja_directory = path_to_project_directory + ".build/ninja/"
+     path_to_ninja_directory = path_to_project_directory + ".build/ninja/windows/" if @OS.is_windows?
+     
+     path_to_ninja_directory = path_to_project_directory + ".build/ninja/mac/" if @OS.is_mac?
+     
+     path_to_ninja_directory = path_to_project_directory + ".build/ninja/linux/" if @OS.is_linux?
      
      path_to_ninja = @ninja_path
      
