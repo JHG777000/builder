@@ -42,7 +42,7 @@ builder provides an easy to use syntax to describe the build process, as can be 
 
  	  output MyApp2("application",MyAppSource,MyToolChain).
 
- 	  message("hello, world.\n").
+ 	  message("hello, world.").
 
  	  copy("MyApp_output/MyApp","build","project").
 	
