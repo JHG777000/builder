@@ -849,7 +849,7 @@ class BuildFunctions
         
         puts "Launching the program with this path: '#{output.path_to_output}'..."
         
-        unless system("./#{output.path_to_output}")
+        unless system("#{output.path_to_output}")
             
             puts "Failed to launch the program or script with this path: '#{output.path_to_output}'."
             
@@ -1059,9 +1059,9 @@ class Builder
      
      Dir.mkdir("#{get_path('project')}") unless File.exists?("#{get_path('project')}")
      
-     Dir.mkdir("#{get_path('project')}/.build") unless File.exists?("#{get_path('project')}/.build")
+     Dir.mkdir("#{get_path('project')}.build") unless File.exists?("#{get_path('project')}/.build")
      
-     Dir.mkdir("#{get_path('project')}/.build/ninja") unless File.exists?("#{get_path('project')}/.build/ninja")
+     Dir.mkdir("#{get_path('project')}.build/ninja") unless File.exists?("#{get_path('project')}/.build/ninja")
      
      Dir.mkdir("#{get_path('ninja')}") unless File.exists?("#{get_path('ninja')}")
      
