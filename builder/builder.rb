@@ -1679,10 +1679,8 @@ class Buildfile
         k = 0
         
         while i < ver.length
-         
-         break if j > min.length
-         
-         break if k > max.length
+    
+         return false if k >= max.length
          
          i+=1 if ver[i] == "."
          
@@ -1696,7 +1694,7 @@ class Buildfile
          
          i+=1
          
-         j+=1
+         j+=1 if j+1 < min.length
          
          k+=1
         
@@ -2733,7 +2731,7 @@ class Buildfile
         
         @buildfile_version_min = "1.0"
         
-        @project_version_max = "9.9"
+        @project_version_max = nil
         
         @filename = nil
         
