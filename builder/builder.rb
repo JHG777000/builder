@@ -1026,6 +1026,8 @@ class Builder
  
  attr_accessor :download_project
  
+ attr_accessor :force_update
+ 
  attr_accessor :url_to_src
  
  attr_accessor :url_to_buildfile
@@ -1310,7 +1312,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory,force_update)
      
      #init builder
      
@@ -1341,6 +1343,8 @@ class Builder
      @global_subprojects_force = global_subprojects_force
      
      @output_directory = output_directory
+     
+     @force_update = force_update
      
      @path_to_subproject = path_to_subproject
      
@@ -1436,6 +1440,10 @@ class Builder
                      options2[:global_subprojects_force] = g
                  end
                  
+                 opts.on("-p", "--project_force_update", "Force update current project.") do |p|
+                     options2[:force_update] = p
+                 end
+                 
                  opts.on("-h", "--help", "Prints help.") do
                      puts opts
                      exit
@@ -1467,7 +1475,7 @@ class Builder
              
              path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force], @output_directory
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force], @output_directory, options2[:force_update]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -1678,6 +1686,8 @@ class Buildfile
         
         k = 0
         
+        return true if min == nil || max == nil || ver == nil
+            
         while i < ver.length
     
          return false if k >= max.length
@@ -2921,9 +2931,9 @@ class Buildfile
      
      @line_number += 1
      
-     if @downloaded && @project_version_max != nil
+     if (@downloaded && @project_version_max != nil) || (@builder.force_update && @downloaded) || (@builder.force_update && @builder.download_project)
          
-         unless compare_versions("0.0",@project_version_max,@fileinfo["project_version"])
+         if !compare_versions("0.0",@project_version_max,@fileinfo["project_version"]) || (@builder.force_update && @downloaded) || (@builder.force_update && @builder.download_project)
             
             puts "Updating project '#{@fileinfo['project']}'..."
             
@@ -2932,6 +2942,8 @@ class Buildfile
             @builder.url_to_buildfile = @save_url_to_buildfile
             
             @project_version_max = nil
+            
+            @builder.force_update = false
             
             @downloaded = false
             
@@ -3182,6 +3194,10 @@ OptionParser.new do |opts|
         options[:output_directory] = o
     end
     
+    opts.on("-p", "--project_force_update", "Force update current project.") do |p|
+        options[:force_update] = p
+    end
+    
     opts.on("-h", "--help", "Prints help.") do
         puts opts
         exit
@@ -3197,7 +3213,7 @@ options[:output_directory] = options[:output_directory] + "/" unless options[:ou
 
 Dir.mkdir("#{options[:output_directory]}") unless File.exists?("#{options[:output_directory]}") unless options[:output_directory] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory]
+builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory], options[:force_update]
 
 #puts Dir.pwd
 
