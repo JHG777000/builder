@@ -844,6 +844,8 @@ class BuildFunctions
             
              puts "Launch function needs an output object."
              
+             puts "Builder shutting down..."
+             
              exit(1)
         end
         
@@ -999,6 +1001,21 @@ class Subproject < BuildObject
     def initialize(input)
         super input
         @type = "subproject"
+    end
+end
+
+class SubprojectCase
+    
+    attr_accessor :outputs
+    
+    attr_accessor :paths
+    
+    def initialize
+        
+        @outputs = nil
+        
+        @paths = nil
+        
     end
 end
 
@@ -2188,6 +2205,32 @@ class Buildfile
         
     end
     
+    def parse_return_output(line)
+    
+     string = String.new
+    
+     string += "@output_object_hash['#{line[1]}'] = #{line[1].downcase}\n"
+     
+     @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+        
+    end
+    
+    def parse_return_subproject(line)
+        
+     string = String.new
+     
+     string += "#{line[1].downcase} = SubprojectCase.new\n"
+     
+     string += "#{line[1].downcase}.outputs = output_objects['#{line[1]}']\n"
+     
+     string += "#{line[1].downcase}.paths = output_paths['#{line[1]}']\n"
+     
+     string += "@output_object_hash['#{line[1]}'] = #{line[1].downcase}\n"
+     
+     @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+        
+    end
+    
     def parse_grab(line)
     
      string = String.new
@@ -2198,6 +2241,24 @@ class Buildfile
         
         exit(1)
         
+     end
+     
+     if line.length == 6
+         
+         unless line[3] == "within"
+             
+             puts "On line: #{@line_number}, expected 'within'."
+             
+             exit(1)
+             
+         end
+         
+         string += "#{line[1].downcase} = #{line[4].downcase}.outputs['#{line[1]}']\n"
+         
+         @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+         
+         return
+         
      end
     
      string += "#{line[1].downcase} = output_objects['#{line[3]}']['#{line[1]}']\n"
@@ -2252,15 +2313,33 @@ class Buildfile
        
        end
        
-       unless line[7] == "from"
+       if line.length == 10
+       
+        unless line[7] == "from"
            
-           puts "On line: #{@line_number}, expected 'from'."
+            puts "On line: #{@line_number}, expected 'from'."
+           
+            exit(1)
+           
+        end
+       
+        string += "#{line[2].downcase} = output_paths['#{line[8]}'][#{line[4]}] + #{line[6]}\n"
+       
+        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+        
+        return
+       
+       end
+       
+       unless line[8] == "within"
+           
+           puts "On line: #{@line_number}, expected 'within'."
            
            exit(1)
            
        end
        
-       string += "#{line[2].downcase} = output_paths['#{line[8]}'][#{line[4]}] + #{line[6]}\n"
+       string += "#{line[2].downcase} = #{line[9].downcase}.paths[#{line[4]}] + #{line[6]}\n"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
        
@@ -2818,6 +2897,10 @@ class Buildfile
         @parse_hash["on"] = method(:parse_on)
         
         @parse_hash["get"] = method(:parse_get)
+        
+        @parse_hash["return_output"] = method(:parse_return_output)
+        
+        @parse_hash["return_subproject"] = method(:parse_return_subproject)
         
         @parse_hash["grab"] = method(:parse_grab)
         
