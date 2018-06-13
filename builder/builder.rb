@@ -998,24 +998,13 @@ class Output < BuildObject
 end
 
 class Subproject < BuildObject
+    attr_accessor :outputs
+    attr_accessor :paths
     def initialize(input)
         super input
         @type = "subproject"
-    end
-end
-
-class SubprojectCase
-    
-    attr_accessor :outputs
-    
-    attr_accessor :paths
-    
-    def initialize
-        
-        @outputs = nil
-        
+        @outputs = nil        
         @paths = nil
-        
     end
 end
 
@@ -1178,6 +1167,11 @@ class Builder
      @path_to_subproject = path + "/"
      
      @buildfile.filename = path + "/" + @buildfile.filename
+     
+ end
+ 
+ def setup(output)
+     
      
  end
  
@@ -1506,7 +1500,9 @@ class Builder
          
      end
      
-     return output_objects, output_paths
+     paths.outputs = output_objects
+     
+     paths.paths = output_paths
      
  end
  
@@ -2199,7 +2195,7 @@ class Buildfile
        
        string += "@ninjafile.run_ninja('#{line[1]}')\n" if line[0] == "output"
        
-       string += "output_objects['#{line[1]}'],output_paths['#{line[1]}'] = build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
+       string += "build_subproject '#{line[1]}', #{line[1].downcase}\n" if line[0] == "subproject"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
         
@@ -2209,22 +2205,6 @@ class Buildfile
     
      string = String.new
     
-     string += "@output_object_hash['#{line[1]}'] = #{line[1].downcase}\n"
-     
-     @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
-        
-    end
-    
-    def parse_return_subproject(line)
-        
-     string = String.new
-     
-     string += "#{line[1].downcase} = SubprojectCase.new\n"
-     
-     string += "#{line[1].downcase}.outputs = output_objects['#{line[1]}']\n"
-     
-     string += "#{line[1].downcase}.paths = output_paths['#{line[1]}']\n"
-     
      string += "@output_object_hash['#{line[1]}'] = #{line[1].downcase}\n"
      
      @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
@@ -2242,26 +2222,8 @@ class Buildfile
         exit(1)
         
      end
-     
-     if line.length == 6
-         
-         unless line[3] == "within"
-             
-             puts "On line: #{@line_number}, expected 'within'."
-             
-             exit(1)
-             
-         end
-         
-         string += "#{line[1].downcase} = #{line[4].downcase}.outputs['#{line[1]}']\n"
-         
-         @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
-         
-         return
-         
-     end
     
-     string += "#{line[1].downcase} = output_objects['#{line[3]}']['#{line[1]}']\n"
+     string += "#{line[1].downcase} = #{line[3].downcase}.outputs['#{line[1]}']\n"
      
      @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
     
@@ -2313,33 +2275,15 @@ class Buildfile
        
        end
        
-       if line.length == 10
-       
-        unless line[7] == "from"
+       unless line[7] == "from"
            
-            puts "On line: #{@line_number}, expected 'from'."
+        puts "On line: #{@line_number}, expected 'from'."
            
-            exit(1)
-           
-        end
-       
-        string += "#{line[2].downcase} = output_paths['#{line[8]}'][#{line[4]}] + #{line[6]}\n"
-       
-        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
-        
-        return
-       
-       end
-       
-       unless line[8] == "within"
-           
-           puts "On line: #{@line_number}, expected 'within'."
-           
-           exit(1)
+        exit(1)
            
        end
-       
-       string += "#{line[2].downcase} = #{line[9].downcase}.paths[#{line[4]}] + #{line[6]}\n"
+    
+       string += "#{line[2].downcase} = #{line[8].downcase}.paths[#{line[4]}] + #{line[6]}\n"
        
        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
        
@@ -2899,8 +2843,6 @@ class Buildfile
         @parse_hash["get"] = method(:parse_get)
         
         @parse_hash["return_output"] = method(:parse_return_output)
-        
-        @parse_hash["return_subproject"] = method(:parse_return_subproject)
         
         @parse_hash["grab"] = method(:parse_grab)
         
