@@ -1232,7 +1232,7 @@ class Builder
              
              unless system("chrpath -r $ORIGIN/#{lib} #{dest_path + exe}")
                  
-                 puts "Failed to use the install_name_tool on the program with this path: #{dest_path + exe} ."
+                 puts "Failed to use chrpath on the program with this path: #{dest_path + exe} ."
                  
                  puts "Builder shutting down..."
                  
