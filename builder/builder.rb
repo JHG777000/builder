@@ -682,6 +682,8 @@ class BuildNinjaFile
                 
                 object += ".#{@libext[@toolchain]}"
                 
+                output.output_dylibs.push object
+                
             end
             
             if ext[ext.length-1] == "so"
@@ -692,6 +694,8 @@ class BuildNinjaFile
                 
                 object += ".#{@libext[@toolchain]}" if @OS.is_windows?
                 
+                output.output_dylibs.push object
+                
             end
             
             if ext[ext.length-1] == "dylib"
@@ -701,6 +705,8 @@ class BuildNinjaFile
                 object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
                 
                 object += ".#{@libext[@toolchain]}" if @OS.is_windows?
+                
+                output.output_dylibs.push object
                 
             end
             
@@ -794,6 +800,22 @@ class BuildFunctions
        
        puts msg
        
+    end
+    
+    def setup(program,setup_name,dest_dir)
+        
+        unless program.class.name == "Output"
+            
+            puts "Setup function needs an output object, for program."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        @builder.setup program, setup_name, dest_dir
+        
     end
     
     def move(src_file,src_dir,dest_dir)
@@ -990,10 +1012,12 @@ end
 
 class Output < BuildObject
     attr_accessor :path_to_output
+    attr_accessor :output_dylibs
     def initialize(input)
         super input
         @type = "output"
         @path_to_output = ""
+        @output_dylibs = []
     end
 end
 
@@ -1170,8 +1194,55 @@ class Builder
      
  end
  
- def setup(output)
+ def setup(output,dest_name,dest_dir)
      
+     dest_path = get_path_for_functions(dest_dir) + dest_name + "/"
+     
+     Dir.mkdir get_path_for_functions(dest_dir) + dest_name unless File.exists? get_path_for_functions(dest_dir) + dest_name
+     
+     FileUtils.copy output.path_to_output, dest_path
+     
+     exe = output.path_to_output.split("/")
+     
+     exe = exe[exe.length-1]
+     
+     output.output_dylibs.each { |dylib|
+         
+         lib = dylib.split("/")
+         
+         lib = lib[lib.length-1]
+         
+         FileUtils.copy dylib, dest_path
+         
+         if ( @OS.is_mac? )
+             
+             unless system("install_name_tool -change #{dylib} @loader_path/#{lib} #{dest_path + exe}")
+                 
+                 puts "Failed to use the install_name_tool on the program with this path: #{dest_path + exe} ."
+                 
+                 puts "Builder shutting down..."
+                 
+                 exit(1)
+                 
+             end
+             
+         end
+         
+         if ( @OS.is_linux? )
+             
+             unless system("chrpath -r $ORIGIN/#{lib} #{dest_path + exe}")
+                 
+                 puts "Failed to use the install_name_tool on the program with this path: #{dest_path + exe} ."
+                 
+                 puts "Builder shutting down..."
+                 
+                 exit(1)
+                 
+             end
+             
+         end
+
+     }
      
  end
  
@@ -2851,6 +2922,8 @@ class Buildfile
         @parse_hash["include"] = method(:parse_include)
         
         @parse_hash["message"] = method(:parse_function)
+        
+        @parse_hash["setup"] = method(:parse_function)
         
         @parse_hash["move"] = method(:parse_function)
         
