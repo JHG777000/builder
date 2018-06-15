@@ -830,6 +830,82 @@ class BuildFunctions
         
     end
     
+    def move_output(src,dest_dir)
+        
+        unless src.class.name == "Output"
+            
+            puts "Move_output function needs an output object, for src."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        dest_path = @builder.get_path_for_functions(dest_dir)
+        
+        FileUtils.move src.path_to_output, dest_path
+        
+    end
+    
+    def copy_output(src,dest_dir)
+        
+        unless src.class.name == "Output"
+            
+            puts "Copy_output function needs an output object, for src."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        dest_path = @builder.get_path_for_functions(dest_dir)
+        
+        FileUtils.copy src.path_to_output, dest_path
+
+    end
+    
+    def external(op,src,dest)
+        
+        unless @builder.allowed_external_function
+            
+            puts "external function not allowed."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        unless op.class.name == "String"
+            
+            puts "external function needs a string object, for op."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        if op != "move" && op != "copy"
+          
+          puts "external function needs op to be either 'move' or 'copy'."
+          
+          puts "Builder shutting down..."
+          
+          exit(1)
+          
+        end
+        
+        src = src.path_to_output if src.class.name == "Output"
+        
+        FileUtils.move src, dest if op == "move"
+        
+        FileUtils.copy src, dest if op == "copy"
+        
+    end
+    
     def clean(dir)
     
        @builder.clean dir
@@ -1054,6 +1130,8 @@ class Builder
  
  attr_reader :allow_extern_exec
  
+ attr_reader :allowed_external_function
+ 
  attr_accessor :download_project
  
  attr_accessor :force_update
@@ -1218,7 +1296,7 @@ class Builder
              
              unless system("install_name_tool -change #{dylib} @loader_path/#{lib} #{dest_path + exe}")
                  
-                 puts "Failed to use the install_name_tool on the program with this path: #{dest_path + exe} ."
+                 puts "Failed to use the install_name_tool on the program with this path: #{dest_path + exe}."
                  
                  puts "Builder shutting down..."
                  
@@ -1232,7 +1310,7 @@ class Builder
              
              unless system("chrpath -r $ORIGIN/#{lib} #{dest_path + exe}")
                  
-                 puts "Failed to use chrpath on the program with this path: #{dest_path + exe} ."
+                 puts "Failed to use chrpath on the program with this path: #{dest_path + exe}."
                  
                  puts "Builder shutting down..."
                  
@@ -1394,7 +1472,7 @@ class Builder
      
  end
  
- def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory,force_update)
+ def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory,force_update,allowed_external_function)
      
      #init builder
      
@@ -1417,6 +1495,8 @@ class Builder
      @url_to_buildfile = url_to_buildfile
      
      @allow_extern_exec = allow_extern_exec
+     
+     @allowed_external_function = allowed_external_function
      
      @download_project = download_project
      
@@ -1514,6 +1594,10 @@ class Builder
                      options2[:allow] = a
                  end
                  
+                 opts.on("-e", "--external_move_or_copy", "Allow external move or copy, where the destination can be outside of the output directory, via the external function.") do |e|
+                     options2[:external_move_or_copy] = e
+                 end
+                 
                  opts.on("-l", "--local_subprojects_force", "Force all subprojects to be local.") do |l|
                      options2[:local_subprojects_force] = l
                  end
@@ -1522,7 +1606,7 @@ class Builder
                      options2[:global_subprojects_force] = g
                  end
                  
-                 opts.on("-p", "--project_force_update", "Force update current project.") do |p|
+                 opts.on("-p", "--project_force_update", "Force the current project to update.") do |p|
                      options2[:force_update] = p
                  end
                  
@@ -1557,7 +1641,7 @@ class Builder
              
              path = paths.array[1].array[0].chomp(ext[ext.length-1])
              
-             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force], @output_directory, options2[:force_update]
+             builder = Builder.new @ninja_path, options2[:selected_build], options2[:build_options], project, path, url_to_buildfile, options2[:allow], options2[:download_project], options2[:local_subprojects_force], options2[:global_subprojects_force], @output_directory, options2[:force_update], options2[:external_move_or_copy]
              
              puts "Building subproject: '#{name}' with buildfile: '#{options2[:filename]}'..."
              
@@ -2929,6 +3013,12 @@ class Buildfile
         
         @parse_hash["copy"] = method(:parse_function)
         
+        @parse_hash["move_output"] = method(:parse_function)
+        
+        @parse_hash["copy_output"] = method(:parse_function)
+        
+        @parse_hash["external"] = method(:parse_function)
+        
         @parse_hash["clean"] = method(:parse_function)
         
         @parse_hash["clean_output"] = method(:parse_function)
@@ -3280,6 +3370,10 @@ OptionParser.new do |opts|
         options[:allow] = a
     end
     
+    opts.on("-e", "--external_move_or_copy", "Allow external move or copy, where the destination can be outside of the output directory, via the external function.") do |e|
+        options[:external_move_or_copy] = e
+    end
+    
     opts.on("-l", "--local_subprojects_force", "Force all subprojects to be local.") do |l|
         options[:local_subprojects_force] = l
     end
@@ -3292,7 +3386,7 @@ OptionParser.new do |opts|
         options[:output_directory] = o
     end
     
-    opts.on("-p", "--project_force_update", "Force update current project.") do |p|
+    opts.on("-p", "--project_force_update", "Force the current project to update.") do |p|
         options[:force_update] = p
     end
     
@@ -3311,7 +3405,7 @@ options[:output_directory] = options[:output_directory] + "/" unless options[:ou
 
 Dir.mkdir("#{options[:output_directory]}") unless File.exists?("#{options[:output_directory]}") unless options[:output_directory] == nil
 
-builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory], options[:force_update]
+builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory], options[:force_update], options[:external_move_or_copy]
 
 #puts Dir.pwd
 
