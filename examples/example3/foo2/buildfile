@@ -1,0 +1,60 @@
+
+project := "foo_project".
+
+project_version := "1.0".
+
+buildfile_version := "1.0".
+
+build foobuild.
+
+ options.
+
+  on toolchain_select("-t", "--toolchain=tool", "Select toolchain, clang or gcc.").
+
+ end options.
+
+ get toolchain_select.
+
+ if ( toolchain_select != "clang" && toolchain_select != "gcc" ).
+
+   var toolchain_select := "clang".
+
+ end if.
+
+ files MyAppSourceFiles("foo.c").
+
+ sources MyAppSource(MyAppSourceFiles).
+
+ compiler MyCompilerFlags("-Wall").
+
+ toolchain MyToolChain(toolchain_select,MyCompilerFlags).
+
+ output foo2("application",MyAppSource,MyToolChain).
+
+ message("hello, world.\n").
+
+ make filepath foo3_path from "resources" to "foo3/buildfile2".
+
+ files FilesForFoo3(foo3_path).
+
+ subproject foo3_project("local",FilesForFoo3,"-i __t_gcc").
+
+ grab foo3 from foo3_project.
+
+ return_output foo3.
+
+ return_output foo3_project.
+
+ if ( !is_win ).
+ 
+  copy("foo2_output/foo2","build","project").
+
+ end if.
+
+ if ( is_win ).
+ 
+  copy("foo2_output/foo2.exe","build","project").
+
+ end if.
+
+end build.

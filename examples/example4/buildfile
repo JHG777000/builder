@@ -1,0 +1,53 @@
+
+project := "My Project".
+
+project_version := "1.0".
+
+buildfile_version := "1.0".
+
+build mybuild.
+
+ options.
+
+  on toolchain_select("-t", "--toolchain=tool", "Select toolchain, clang or gcc.").
+
+ end options.
+
+ get toolchain_select.
+
+ if ( toolchain_select != "clang" && toolchain_select != "gcc" ).
+
+   var toolchain_select := "gcc".
+
+ end if.
+
+ message("Building foo...").
+
+ make filepath foo2_path from "resources" to "foo2".
+
+ files FilesForFoo2(foo2_path + "/buildfile").
+
+ subproject foo2_project("local",FilesForFoo2,nil).
+
+ grab foo2 from foo2_project.
+
+ make filepath include_path from "resources" to "include".
+
+ make filepath foo2_include_path from "resources" to "include" from foo2_project.
+
+ files MyAppSourceFiles("src.directory").
+
+ sources MyAppSource(MyAppSourceFiles,foo2).
+
+ compiler MyCompilerFlags("-Wall","-I " + include_path,"-I " + foo2_include_path).
+
+ toolchain MyToolChain(toolchain_select,MyCompilerFlags).
+
+ output MyApp("application",MyAppSource,MyToolChain).
+
+ launch(MyApp).
+
+end build.
+
+
+

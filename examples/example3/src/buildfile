@@ -1,0 +1,56 @@
+
+project := "My Project".
+
+project_version := "1.0".
+
+buildfile_version := "1.0".
+
+build mybuild.
+
+ string hello := "test.c".
+
+ float value := (5.6).
+
+ bool stuff := true.
+
+ eval hello := hello + ".g".
+
+ eval value := value + 1.
+
+ if ( value == (6.6) ).
+
+  eval value := value + 1.
+
+  if ( (7.6) == value ).
+
+   message("Hello World!!!!").
+
+   eval value := value + 1.
+
+  end if.
+
+  message(value).
+
+ end if.
+
+ files MyAppSourceFiles("MyOtherFile.c", "Folder/SourceFile.c",hello,value).
+
+end build.
+
+build mybuild2.
+
+ options.
+
+  on hello("-t", "--test=name", "This is a test.").
+
+ end options.
+
+ get hello.
+
+ files MyAppSourceFiles("MyOtherFile.c", "Folder/SourceFile.cd",hello).
+
+ message(hello).
+
+end build.
+
+default mybuild.

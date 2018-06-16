@@ -1109,7 +1109,7 @@ class Subproject < BuildObject
 end
 
 class GetOS
-    
+    #https://stackoverflow.com/questions/170956/how-can-i-find-which-operating-system-my-ruby-program-is-running-on
     def is_windows?
         true if RUBY_PLATFORM =~ /win32|cygwin|mswin|mingw|bccwin|wince|emx/
     end
