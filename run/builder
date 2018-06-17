@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
 
-ruby ~/builder/builder/builder.rb $@
+if [[ $OSTYPE == darwin* ]]; then
+ /usr/local/bin/ruby ~/builder/builder/builder.rb $@
+else
+ ruby ~/builder/builder/builder.rb $@
+fi
+
