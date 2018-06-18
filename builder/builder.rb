@@ -597,7 +597,7 @@ class BuildNinjaFile
        
        @ninja_string += "  command = #{@linker[@toolchain]} $ldflags -o $out $in $libs\n" unless @toolchain == "msvc"
        
-       @ninja_string += "  command = #{@linker[@toolchain]} $in $libs /nologo /link $ldflags /out:$out\n" if @toolchain == "msvc"
+       @ninja_string += "  command = #{@linker[@toolchain]} $in $libs /nologo /link $ldflags /out:$out.exe\n" if @toolchain == "msvc"
        
        @ninja_string += "  description = linking: $out...\n"
        
@@ -678,23 +678,23 @@ class BuildNinjaFile
             
             if ext[ext.length-1] == "dll"
                 
+                output.output_dylibs.push object
+
                 object = object.chomp(".dll")
                 
                 object += ".#{@libext[@toolchain]}"
-                
-                output.output_dylibs.push object
                 
             end
             
             if ext[ext.length-1] == "so"
                 
                 object = object.chomp(".so")
+
+                output.output_dylibs.push object + ".#{@dylibext[@toolchain]}"
                 
                 object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
                 
                 object += ".#{@libext[@toolchain]}" if @OS.is_windows?
-                
-                output.output_dylibs.push object
                 
             end
             
@@ -702,11 +702,11 @@ class BuildNinjaFile
                 
                 object = object.chomp(".dylib")
                 
+                output.output_dylibs.push object + ".#{@dylibext[@toolchain]}"
+
                 object += ".#{@dylibext[@toolchain]}" unless @OS.is_windows?
                 
                 object += ".#{@libext[@toolchain]}" if @OS.is_windows?
-                
-                output.output_dylibs.push object
                 
             end
             
@@ -719,8 +719,10 @@ class BuildNinjaFile
         
         @ninja_string += " olib = #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{name}.#{@libext[@toolchain]} \n" if @outtype == "dynamic_library" && @toolchain != "msvc" && @OS.is_windows?
         
-        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application"
+        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}" if @outtype == "application" && !@OS.is_windows?
         
+        output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.exe" if @outtype == "application" && @OS.is_windows?
+
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.#{@libext[@toolchain]}" if @outtype == "library"
         
         output.path_to_output = "#{@path_to_build_directory}#{name}_output/#{name}.#{@dylibext[@toolchain]}" if @outtype == "dynamic_library"
@@ -1147,7 +1149,7 @@ class Builder
      
      init = false
      
-     init = true if File.exists?("#{get_path('project')}.build/ninja") || @ninja_path != nil
+     init = true if File.exists?("#{get_path('ninja')}") || @ninja_path != nil
      
      puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      

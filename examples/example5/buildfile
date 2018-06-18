@@ -47,7 +47,17 @@ build mybuild.
 
  setup(MyApp,"MyApp","project"). //Make sure dylibs are setup regardless of OS
 
- make filepath AppPath from "project" to "MyApp/MyApp".
+ if (!is_win).
+
+  make filepath AppPath from "project" to "MyApp/MyApp".
+
+ end if.
+
+ if (is_win).
+
+  make filepath AppPath from "project" to "MyApp/MyApp.exe".
+
+ end if.
 
  run(AppPath).
 
