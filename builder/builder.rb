@@ -1954,11 +1954,11 @@ class Buildfile
          
        end
        
-       unless compare_versions @buildfile_version_min,@buildfile_version,@fileinfo["buildfile_version"]
+       unless compare_versions @buildfile_version_min,@buildfile_version_max,@fileinfo["buildfile_version"]
            
          puts "Unsupported buildfile version: #{@fileinfo['buildfile_version']}."
          
-         puts "Builder version: #{@builder.version}, only supports buildfile versions between: #{@buildfile_version_min}, and #{@buildfile_version}."
+         puts "Builder version: #{@builder.version}, only supports buildfile versions between: #{@buildfile_version_min}, and #{@buildfile_version_max}."
          
          exit(1)
            
@@ -2917,7 +2917,7 @@ class Buildfile
         
         @parsed_values = 0
         
-        @buildfile_version = "1.0"
+        @buildfile_version_max = "1.0"
         
         @buildfile_version_min = "1.0"
         
