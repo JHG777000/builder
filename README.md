@@ -62,13 +62,15 @@ Download or clone builder, place builder in your home directory. The folder cont
  [3]:https://www.ruby-lang.org/en/
  [4]:https://brew.sh
  
+The toolchains builder supports are separate programs that need to be installed as well.
+ 
 ## Platform Support
 
 builder plans to fully support Windows, macOS, and linux. Currently builder is known to work(more or less) under Windows, and macOS. builder is untested on linux.
 
 ## Toolchain Support
 
-builder supports gcc, clang, and msvc(only on Windows). While builder provides these toolchains, projects that use builder may not support all toolchains, or only one, or work better on some than others, consult the project 's documentation and/or build instructions.
+builder supports gcc, clang, and msvc(only on Windows). While builder provides these toolchains, projects that use builder may not support all toolchains, or only one, or work better on some than others, consult the project 's documentation and/or build instructions. Make sure a toolchain is properly installed before using it.
 
 ## Ninja
 
