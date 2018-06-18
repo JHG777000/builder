@@ -1,10 +1,13 @@
 # builder
 
-builder is a work in progress build automation tool with a simple and easy to use syntax.
+builder is a build automation tool with a simple and easy to use syntax.
 
 ## About
 
-builder provides an easy to use syntax to describe the build process, as can be seen below in the example buildfile.
+builder provides an easy to use syntax to describe the build process, as can be seen below in the example buildfile. You can also look at [RKLib][1]'s buildfile [here][2], which makes use of more advanced features than the example buildfile. You should also check out the other example buildfiles in the example folder.
+
+ [1]:https://github.com/JHG777000/RKLib
+ [2]:https://github.com/JHG777000/RKLib/blob/master/buildfile
 
  Example of a buildfile for a simple project: 
 	
@@ -43,8 +46,6 @@ builder provides an easy to use syntax to describe the build process, as can be 
  	  output MyApp2("application",MyAppSource,MyToolChain).
 
  	  message("hello, world.").
-
- 	  copy("MyApp_output/MyApp","build","project").
 	
  	  launch(MyApp).
 
@@ -54,13 +55,20 @@ builder provides an easy to use syntax to describe the build process, as can be 
 
 
 
+## Installing 
+
+Download or clone builder, place builder in your home directory. The folder containing builder should itself be named 'builder', such that 'builder.rb' is at '~/builder/builder/builder.rb'. Add the 'run' directory to your system path. Make sure you have that latest version of [ruby][3]. On Mac, its recommended that you use [brew][4] to get the latest version of ruby.
+
+ [3]:https://www.ruby-lang.org/en/
+ [4]:https://brew.sh
+ 
 ## Platform Support
 
-Currently builder works under macOS, is untested on linux, limited testing under Windows. Not all features work under Windows as of now.
+builder plans to fully support Windows, macOS, and linux. Currently builder is known to work(more or less) under Windows, and macOS. builder is untested on linux.
 
 ## Toolchain Support
 
-builder plans to support gcc, clang, and msvc(only on Windows). Gcc and clang work under macOS, an install of gcc on Windows works with most cases. msvc support and full Windows support, work in progress.
+builder plans to support gcc, clang, and msvc(only on Windows). While builder provides these toolchains, projects that use builder may not support all toolchains, or only one, or work better on some than others, consult the project 's documentation and/or build instructions.
 
 ## Ninja
 
