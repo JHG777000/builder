@@ -4,7 +4,7 @@ builder is a build automation tool with a simple and easy to use syntax.
 
 ## About
 
-builder provides an easy to use syntax to describe the build process, as can be seen below in the example buildfile. You can also look at [RKLib][1]'s buildfile [here][2], which makes use of more advanced features than the examples buildfile. You should also check out the other example buildfiles in the example folder.
+builder provides an easy to use syntax to describe the build process, as can be seen below in the example buildfile. You can also look at [RKLib][1]'s buildfile [here][2], which makes use of more advanced features than the example buildfile. You should also check out the other example buildfiles in the examples folder.
 
  [1]:https://github.com/JHG777000/RKLib
  [2]:https://github.com/JHG777000/RKLib/blob/master/buildfile
