@@ -1769,6 +1769,26 @@ class Builder
      
  end
 
+
+ def kill_dir(dir)
+
+  Dir.each_child(dir){ |entry|
+    
+     next if entry[0] == '.'
+    
+     unless Dir.exist?(dir + "/" + entry)
+        
+        FileUtils.remove_file dir + "/" + entry
+        
+     end
+    
+     kill_dir(dir + "/" + entry) if Dir.exist?(dir + "/" + entry)
+  }
+  
+  FileUtils.remove_dir dir
+
+ end
+
 end
 
 class Buildfile
@@ -3127,6 +3147,8 @@ class Buildfile
             
             puts "Updating project '#{@fileinfo['project']}'..."
             
+            file.close if @builder.url_to_buildfile == nil
+
             FileUtils.remove_dir "#{@builder.get_path('project')}#{@fileinfo['project']}_src" if File.exists?("#{@builder.get_path('project')}#{@fileinfo['project']}_src")
             
             @builder.url_to_buildfile = @save_url_to_buildfile
