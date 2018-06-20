@@ -15,3 +15,6 @@ To build this project, and specify the toolchain 'gcc' use this command:
 To build this project, and specify the toolchain 'clang' use this command:
 
 	builder -i __t_clang
+	
+
+The -i option specifies input build options, a string containing command-line options(in options string format) to be used as input for the running build. Format example: '-t gcc' is to be input as '\_\_t\_gcc'. One underscore is space, two is '-', three is '_', four is reset."
