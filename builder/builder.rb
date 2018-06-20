@@ -2022,6 +2022,8 @@ class Buildfile
            
        end
        
+       @scope_stack.push("build")
+       
     end
     
     def parse_end(line)
@@ -2048,7 +2050,7 @@ class Buildfile
            
            string += "\n"
            
-           @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+           @buildstring[@current_build] += string unless @buildstring[@current_build] == nil unless @scope_stack[@scope_stack.length-1] == "build"
            
            @scope_stack.pop
            
@@ -3361,9 +3363,17 @@ class Buildfile
         
         self.parse_file an_include
     }
+   
+     unless @scope_stack.length == 0
+        
+        puts "On line: #{@line_number}, not ended with '#{@scope_stack[@scope_stack.length-1]}'."
+        
+        exit(1)
+        
+     end
       
     end
-    
+
 end
 
 OptionParser.new do |opts|
