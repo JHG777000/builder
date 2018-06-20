@@ -1,6 +1,6 @@
 ## Example 3
 
-Example 3 demonstrates more advance features. Such as include and, subproject.
+Example 3 demonstrates more advanced features. Such as include and, subproject.
 
 To build this project use this command:
 
