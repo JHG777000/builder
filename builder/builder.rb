@@ -2012,10 +2012,6 @@ class Buildfile
            
            @buildstring[@current_build] += "is_linux = @OS.is_linux?\n"
            
-           @buildstring[@current_build] += "output_objects = Hash.new\n"
-           
-           @buildstring[@current_build] += "output_paths = Hash.new\n"
-           
        end
        
        @scope_stack.push("build")
