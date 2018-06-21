@@ -41,7 +41,7 @@ class BuildNinjaFile
                 
                 ext = entry.split(".")
                 
-                @objects.push  dirname + "/" + entry if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib"
+                @objects.push  dirname + "/" + entry if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
                 
                 @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
                 
@@ -60,7 +60,7 @@ class BuildNinjaFile
            
             ext = file.split(".")
            
-            @objects.push  @path_to_resources + file if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib"
+            @objects.push  @path_to_resources + file if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
             
             @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
             
@@ -1576,10 +1576,6 @@ class Builder
                  
                  opts.banner = "Usage: builder [options]"
                  
-                 opts.on("-f", "--filename=name", "Filename of the buildfile. Default filename is 'buildfile'.") do |f|
-                     options2[:filename] = f
-                 end
-                 
                  opts.on("-b", "--build_select=build", "Select the build to run in the buildfile.") do |b|
                      options2[:selected_build] = b
                  end
@@ -2030,6 +2026,8 @@ class Buildfile
         
         string = ""
         
+        @scope_stack.pop if @scope_stack[@scope_stack.length-1] == "build"
+        
         if @scope_stack.length >= 1
            
            unless line[1] == @scope_stack[@scope_stack.length-1]
@@ -2050,7 +2048,7 @@ class Buildfile
            
            string += "\n"
            
-           @buildstring[@current_build] += string unless @buildstring[@current_build] == nil unless @scope_stack[@scope_stack.length-1] == "build"
+           @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
            
            @scope_stack.pop
            
@@ -2986,6 +2984,8 @@ class Buildfile
         @parse_hash["linker"] = method(:parse_object)
         
         @parse_hash["archiver"] = method(:parse_object)
+        
+        @parse_hash["dlinker"] = method(:parse_object)
         
         @parse_hash["frameworks"] = method(:parse_object)
         
