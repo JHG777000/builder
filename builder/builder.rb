@@ -1356,6 +1356,8 @@ class Builder
      
      return nil if dirname == "working"
      
+     return nil if dirname == "output"
+     
      FileUtils.remove_dir get_path(dirname) if File.exists?(get_path(dirname))
      
  end
@@ -1415,6 +1417,10 @@ class Builder
      path_to_ninja = @ninja_path
      
      return path_to_resources if dirname == "resources"
+     
+     return @superproject if @superproject != nil && dirname == "output"
+     
+     return Dir.pwd + "/" if @superproject == nil && dirname == "output"
      
      return path_to_project_directory if dirname == "project"
      
