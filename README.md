@@ -64,6 +64,12 @@ Download or clone builder, place builder in your home directory. The folder cont
  
 The toolchains builder supports are separate programs that need to be installed as well.
  
+## Manual
+
+builder's manual is [here][5].
+
+[5]:https://github.com/JHG777000/builder/blob/master/Manual.md
+
 ## Platform Support
 
 builder plans to fully support Windows, macOS, and linux. Currently builder is known to work(more or less) under Windows, and macOS. builder is untested on linux.
