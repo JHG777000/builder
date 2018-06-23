@@ -76,7 +76,7 @@ builder plans to fully support Windows, macOS, and linux. Currently builder is k
 
 ## Toolchain Support
 
-builder supports gcc, clang, and msvc(only on Windows). While builder provides these toolchains, projects that use builder may not support all toolchains, or only one, or work better on some than others, consult the project 's documentation and/or build instructions. Make sure a toolchain is properly installed, and up to date before using it.
+builder supports gcc, clang, and msvc(only on Windows). While builder provides support for these toolchains, projects that use builder may not support all toolchains, or only one, or work better on some than others, consult the project 's documentation and/or build instructions. Make sure a toolchain is properly installed, and up to date before using it.
 
 ## Ninja
 
