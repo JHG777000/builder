@@ -563,6 +563,8 @@ Example of the include statement:
 Will include the buildfile with the path "src/buildfile" in the directory "resources". 
 
 Included buildfiles will have builds with the same name as the current build appended on to it at the end.
+
+Included buildfiles must have the same file information values as the main buildfile.
 	
 ### Functions
 
