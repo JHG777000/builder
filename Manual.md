@@ -256,6 +256,7 @@ Sources object example:
 	
 Creates a sources object named "MyAppSource", containing one files object, "MyAppSourceFiles".
 
+Some compilers are sensitive to the order of source files, mostly with static libraries, and object files.
 
 ### libraries
 
