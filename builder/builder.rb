@@ -2190,6 +2190,64 @@ class Buildfile
         
     end
     
+    def parse_run_function(line)
+        
+        i = 1
+        
+        string = String.new
+        
+        string += "BuildFunctions.new(self)."
+        
+        string += line[0]
+        
+        string += "("
+        
+        if line[i] == "("
+            
+            i+=1
+            
+            while line[i] != ")"
+                
+                while line[i] == '('
+                    
+                    i+=1
+                    
+                end
+                
+                if is_string?(line[i])
+                    
+                    string += line[i]
+                    
+                    else
+                    
+                    string += line[i].downcase
+                    
+                end
+                
+                while line[i] == ')'
+                    
+                    i+=1
+                    
+                end
+                
+                i+=1
+                
+            end
+            
+            else
+            
+            puts "On line: #{@line_number}, there is no '('."
+            
+            exit(1)
+            
+        end
+        
+        string += ")\n"
+        
+        @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+        
+    end
+    
     def parse_on(line)
         
         i = 2
@@ -3053,7 +3111,7 @@ class Buildfile
         
         @parse_hash["launch"] = method(:parse_function)
         
-        @parse_hash["run"] = method(:parse_function)
+        @parse_hash["run"] = method(:parse_run_function)
         
         @parse_hash["change_working_directory_to"] = method(:parse_function)
         
