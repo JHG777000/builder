@@ -553,6 +553,19 @@ Example of the make filepath statement, with 'from' allowing the retrieval of a 
 	
 	make filepath subroject_include_path from "resources" to "include" from foo_subroject.
 
+
+### get\_file_exist statement
+
+Sets a variable to true or false, depending on whether the given file exists.
+
+	true, file exists.
+	
+	false, file does not exist.
+	
+Example of the get\_file_exist statement:
+
+	get_file_exist file_bool_var for file "filename".
+
 ### Include statement
 
 The include statement will include another buildfiles.

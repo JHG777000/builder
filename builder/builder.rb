@@ -2526,6 +2526,34 @@ class Buildfile
        
     end
     
+    def parse_get_file_exist(line)
+    
+     #get_file_exist 'var' for file 'path'.
+    
+     string = String.new
+    
+     unless line[2] == "for"
+        
+        puts "On line: #{@line_number}, expected 'for'."
+        
+        exit(1)
+        
+     end
+    
+     unless line[3] == "file"
+        
+        puts "On line: #{@line_number}, expected 'file'."
+        
+        exit(1)
+        
+     end
+     
+     string += "#{line[1]} = File.exists?(#{line[4]})\n"
+     
+     @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
+    
+    end
+    
     def parse_block(line)
         
         i = 2
@@ -3086,6 +3114,8 @@ class Buildfile
         @parse_hash["grab"] = method(:parse_grab)
         
         @parse_hash["make"] = method(:parse_make)
+        
+        @parse_hash["get_file_exist"] = method(:parse_get_file_exist)
         
         @parse_hash["include"] = method(:parse_include)
         
