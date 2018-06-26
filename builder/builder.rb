@@ -92,6 +92,15 @@ class BuildNinjaFile
                
            end
            
+           if source.type == "library_names"
+               
+               source.array.each { |library_name|
+                   
+                   @library_names.push library_name
+               }
+               
+           end
+           
            if source.type == "frameworks"
                
                source.array.each { |framework|
@@ -104,6 +113,12 @@ class BuildNinjaFile
            if source.type == "output"
                
                @objects.push source.path_to_output
+               
+               source.output_libs.each { |lib|
+                
+                  @libs_from_outputs.push lib
+                
+               }
                
            end
            
@@ -356,7 +371,11 @@ class BuildNinjaFile
        
        @libraries = Array.new
        
+       @library_names = Array.new
+       
        @frameworks = Array.new
+       
+       @libs_from_outputs = Array.new
        
        @compiler = Hash.new
        
@@ -564,6 +583,8 @@ class BuildNinjaFile
            @ninja_string += framework
            
            @ninja_string += " "
+           
+           output.output_libs.push "-framework #{framework}"
        }
        
        @libraries.each { |library|
@@ -575,6 +596,32 @@ class BuildNinjaFile
            @ninja_string += ".lib" if @toolchain == "msvc"
            
            @ninja_string += " "
+           
+           output.output_libs.push "-l#{library}" unless @toolchain == "msvc"
+           
+           output.output_libs.push "#{library}.lib" if @toolchain == "msvc"
+       }
+       
+      @library_names.each { |library_name|
+           
+           @ninja_string += "-" unless @toolchain == "msvc"
+           
+           @ninja_string += library_name
+           
+           @ninja_string += ".lib" if @toolchain == "msvc"
+           
+           @ninja_string += " "
+           
+           output.output_libs.push "-#{library_name}" unless @toolchain == "msvc"
+           
+           output.output_libs.push "#{library_name}.lib" if @toolchain == "msvc"
+       }
+      
+       @libs_from_outputs.each { |lib|
+           
+          @ninja_string += lib
+          
+          @ninja_string += " "
        }
        
        @ninja_string += "\n"
@@ -1067,6 +1114,13 @@ class Libraries < BuildObject
     end
 end
 
+class Library_names < BuildObject
+    def initialize(flags)
+        super flags
+        @type = "library_names"
+    end
+end
+
 class Frameworks < BuildObject
     def initialize(flags)
         super flags
@@ -1091,11 +1145,13 @@ end
 class Output < BuildObject
     attr_accessor :path_to_output
     attr_accessor :output_dylibs
+    attr_accessor :output_libs
     def initialize(input)
         super input
         @type = "output"
         @path_to_output = ""
         @output_dylibs = []
+        @output_libs = []
     end
 end
 
@@ -3078,6 +3134,8 @@ class Buildfile
         @parse_hash["frameworks"] = method(:parse_object)
         
         @parse_hash["libraries"] = method(:parse_object)
+        
+        @parse_hash["library_names"] = method(:parse_object)
         
         @parse_hash["path"] = method(:parse_object)
         
