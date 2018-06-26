@@ -622,6 +622,8 @@ class BuildNinjaFile
           @ninja_string += lib
           
           @ninja_string += " "
+          
+          output.output_libs.push lib
        }
        
        @ninja_string += "\n"
