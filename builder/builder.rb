@@ -36,14 +36,14 @@ class BuildNinjaFile
         Dir.each_child(dirname){ |entry|
             
             next if entry[0] == '.'
-           
+            
             unless Dir.exist?(dirname + "/" + entry)
                 
                 ext = entry.split(".")
                 
                 @objects.push  dirname + "/" + entry if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
                 
-                @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
+                @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm"
                 
             end
             
@@ -62,7 +62,7 @@ class BuildNinjaFile
            
             @objects.push  @path_to_resources + file if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
             
-            @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C"
+            @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm"
             
             dirs @path_to_resources + file.chomp(".directory"), false if ext[ext.length-1] == "directory"
             
@@ -673,6 +673,20 @@ class BuildNinjaFile
            ext = source.split("/")
            
            ext = ext[ext.length-1].split(".")
+           
+           if ext[ext.length-1] == "m" || ext[ext.length-1] == "mm"
+               
+               if @toolchain != "clang" && @toolchain != "clang++"
+                
+                puts "Obj-C support requires clang."
+               
+                puts "Builder shutting down..."
+               
+                exit(1)
+               
+               end
+               
+           end
            
            @ninja_string += "build #{add_dollar_to_windows_filepath(@path_to_build_directory)}#{name}_output/#{ext[ext.length-2]}_object_#{name}.#{@objext[@toolchain]}: cc_#{name} #{add_dollar_to_windows_filepath(source)}"
            
