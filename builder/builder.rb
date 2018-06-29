@@ -2650,14 +2650,6 @@ class Buildfile
         
         operator_hash[">"] = true
         
-        if @scope_stack[@scope_stack.length-1] == "options"
-            
-            puts "On line: #{@line_number}, a #{line[0]} block can not exist within an options block."
-            
-            exit(1)
-            
-        end
-        
         string += line[0]
         
         if line[1] != "("
