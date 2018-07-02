@@ -120,7 +120,7 @@ Prints the list of builder's command line options and brief descriptions.
 
 ## Syntax
 
-builder's syntax is designed to simple, straight forward and powerful.
+builder's syntax is designed to be simple, straight forward and powerful.
 
 ### Ruby
 
