@@ -35,7 +35,7 @@ The target output directories exist within the build directory. Not to be confus
 
 ### Ninja
 
-The ninja directory exists with the path: "project/.build/ninja/os". If the current project name is "foo", and the OS is Windows, then the ninja directory's path is: "foo/.build/ninja/windows". The ninja directory contains the build.ninja file and associated files as well as ninja itself. Subprojects do not contain ninja.
+The ninja directory exists with the path: "project/.build/ninja/os". If the current project name is "foo", and the OS is Windows, then the ninja directory's path is: "foo/.build/ninja/windows". The ninja directory contains the build.ninja file and associated files as well as ninja itself. Subprojects do not contain ninja. NOTE: The build.ninja will be copied into the current working directory during the build process, and then deleted afterward.
 
 ## Options
 
