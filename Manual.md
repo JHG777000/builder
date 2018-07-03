@@ -216,7 +216,7 @@ Some objects will cause side effects, or actions not given explicitly but implic
 
 ### files
 
-The files object takes any number of file paths or names. All files must have an extension.
+The files object takes any number of file paths or names. When used as an input to a sources object, all files must have an extension.
 
 The following are source file extensions supported by builder and the files object:
 
@@ -260,11 +260,11 @@ Some compilers are sensitive to the order of source files, mostly with static li
 
 ### libraries
 
-The libraries object takes any number of library names. On Linux and Mac an '-l' is appended to the start of its name. On Windows, ".lib" is appended to the end of its name. Make sure a given library is properly setup and/or installed.
+The libraries object takes any number of library names. On gcc and clang an '-l' is appended to the start of its name. On msvc, ".lib" is appended to the end of its name. Make sure a given library is properly setup and/or installed.
 
 ### library_names
 
-The library_names object takes any number of library names. On Linux and Mac an '-' is appended to the start of its name. On Windows, ".lib" is appended to the end of its name. Make sure a given library is properly setup and/or installed.
+The library_names object takes any number of library names. On gcc and clang an '-' is appended to the start of its name. On msvc, ".lib" is appended to the end of its name. Make sure a given library is properly setup and/or installed.
 
 ### frameworks
 
