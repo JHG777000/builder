@@ -453,7 +453,7 @@ Assignment types:
 	
 	 bool, must be either 'true' or 'false'
 	 
-     var, can be another variable
+     var, can be another variable, a string, a bool or a non-decimal point number
      
 
 #### Eval
