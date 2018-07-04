@@ -220,9 +220,11 @@ The files object takes any number of file paths or names. When used as an input 
 
 The following are source file extensions supported by builder and the files object:
 
-	c, cc, cpp, c++, cxx, C
+	c, cc, cpp, c++, cxx, C, m, mm
 	
 Files with these extensions are viewed as source files, and turned into object files.
+
+NOTE: Objective-C support requires clang.
 
 The following are object file extensions supported by builder and the files object:
 
