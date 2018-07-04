@@ -1245,6 +1245,8 @@ class Builder
      
      Dir.mkdir("#{get_path('project')}.build") unless File.exists?("#{get_path('project')}/.build")
      
+     Dir.mkdir("#{get_path('project')}.build/#{project}") unless File.exists?("#{get_path('project')}/.build/#{project}")
+     
      Dir.mkdir("#{get_path('project')}.build/ninja") unless File.exists?("#{get_path('project')}/.build/ninja")
      
      Dir.mkdir("#{get_path('ninja')}") unless File.exists?("#{get_path('ninja')}")
@@ -1474,6 +1476,8 @@ class Builder
      
      path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/"
      
+     path_to_download_project_ver_files = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/download_project_ver_files/"
+     
      path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/windows/" if @OS.is_windows?
      
      path_to_build_directory = path_to_project_directory + ".build/#{@buildfile.fileinfo['project']}/mac/" if @OS.is_mac?
@@ -1497,6 +1501,8 @@ class Builder
      return path_to_project_directory if dirname == "project"
      
      return path_to_build_directory if dirname == "build"
+     
+     return path_to_download_project_ver_files if dirname == "download_project_ver_files"
      
      return path_to_ninja_directory if dirname == "ninja"
      
@@ -3299,6 +3305,34 @@ class Buildfile
      
      @line_number += 1
      
+     if @builder.download_project && !@builder.force_update && @fileinfo["init"] && @downloaded
+        
+        if File.exist? @builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"]
+           
+            @builder.download_project = false
+           
+            ver = IO.readlines(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"], chomp: true)
+           
+            @builder.force_update = true if !compare_versions("0.0",ver[0],@fileinfo["project_version"])
+            
+            if @builder.force_update
+            
+             FileUtils.remove_file @builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"] if File.exists?(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"])
+            
+             download_project_ver_file = File.new(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"],"w")
+            
+             download_project_ver_file.write(@fileinfo["project_version"])
+            
+             download_project_ver_file.close
+             
+             @builder.download_project = true
+            
+            end
+           
+        end
+        
+     end
+     
      if (@downloaded && @project_version_max != nil) || (@builder.force_update && @downloaded) || (@builder.force_update && @builder.download_project)
          
          if !compare_versions("0.0",@project_version_max,@fileinfo["project_version"]) || (@builder.force_update && @downloaded) || (@builder.force_update && @builder.download_project)
@@ -3333,11 +3367,31 @@ class Buildfile
              
              @builder.get_src(@builder.url_to_src,@fileinfo["project"])
              
-             @builder.download_project = false
+             Dir.mkdir(@builder.get_path_for_functions("download_project_ver_files")) unless File.exists?(@builder.get_path_for_functions("download_project_ver_files"))
+             
+             unless File.exists?(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"])
+             
+              download_project_ver_file = File.new(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"],"w")
+             
+              download_project_ver_file.write(@fileinfo["project_version"])
+             
+              download_project_ver_file.close
+              
+             end
+             
+             @save_url_to_buildfile = @builder.url_to_buildfile
+             
+             @builder.url_to_buildfile = nil
              
              puts "Parsing buildfile for downloaded project: '#{filename}'..."
              
              @filename = filename
+             
+             @downloaded = true
+             
+             self.parse_file @filename
+             
+             return
     
          end
          

@@ -25,6 +25,11 @@ This directory exists within the output directory. The project directory contain
 
 The resources directory is the source directory. The resources directory is by default the current working directory. A subproject's resources directory is the directory of the subprojects's buildfile. A downloaded project's resources directory is or within the directory with the name of the project plus "_src", that in turn exists within the project directory.
 
+
+### Download project version files
+
+The download\_project\_ver\_files directory exists with the path: "project/.build/project/download\_project\_ver\_files". If the current project name is "foo", then the build directory's path is: "foo/.build/foo/download\_project\_ver\_files". The download\_project\_ver_files directory stores downloaded project version files. These files are for updating downloaded projects via the -d flag. Each file is the name of its project and contains the current version of that project as a string.
+
 ### Build
 
 The build directory exists with the path: "project/.build/project/os". If the current project name is "foo", and the OS is Windows, then the build directory's path is: "foo/.build/foo/windows". The build directory contains the target output directories. 
@@ -59,14 +64,14 @@ The ninja directory exists with the path: "project/.build/ninja/os". If the curr
 	
 	 Give a URL to a buildfile for a project to be downloaded and built.
 	 
-The url\_to_src value must be set in the buildfile. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the downloaded buildfile's project version is less than the online one.
+The url\_to_src value must be set in the buildfile. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the downloaded buildfile's project version is less than the online buildfile's project version.
 	 
 ### -d, --download_project
 	
 	
 	 Download the project from the given buildfile, build with the given buildfile.
 	 
-   The url\_to\_src value must be set in the buildfile. Also, after the url\_to_src value is set, the resources directory becomes the  downloaded source directory. Will download a project only once, and will not update automatically.
+   The url\_to\_src value must be set in the buildfile. Also, after the url\_to_src value is set, the resources directory becomes the  downloaded source directory. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the version stored in the downloaded project version file is less than the downloaded buildfile's project version.
 
 ### -a, --allow\_extern_exec
 	
