@@ -28,7 +28,7 @@ The resources directory is the source directory. The resources directory is by d
 
 ### Download project version files
 
-The download\_project\_ver\_files directory exists with the path: "project/.build/project/download\_project\_ver\_files". If the current project name is "foo", then the build directory's path is: "foo/.build/foo/download\_project\_ver\_files". The download\_project\_ver_files directory stores downloaded project version files. These files are for updating downloaded projects via the -d flag. Each file is the name of its project and contains the current version of that project as a string.
+The download\_project\_ver\_files directory exists with the path: "project/.build/project/download\_project\_ver\_files". If the current project name is "foo", then the download\_project\_ver\_files directory's path is: "foo/.build/foo/download\_project\_ver\_files". The download\_project\_ver_files directory stores downloaded project version files. These files are for updating downloaded projects via the -d flag. Each file is the name of its project and contains the current version of that project as a string.
 
 ### Build
 
