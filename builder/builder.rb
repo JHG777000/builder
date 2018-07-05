@@ -1458,6 +1458,8 @@ class Builder
      
      return nil if dirname == "ninja_program"
      
+     return nil if dirname == "download_project_ver_files"
+     
      return get_path(dirname)
      
  end
@@ -3307,19 +3309,21 @@ class Buildfile
      
      if @builder.download_project && !@builder.force_update && @fileinfo["init"] && @downloaded
         
-        if File.exist? @builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"]
+        if File.exist? @builder.get_path("download_project_ver_files") + @fileinfo["project"]
            
             @builder.download_project = false
+            
+            @downloaded = false
            
-            ver = IO.readlines(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"], chomp: true)
+            ver = IO.readlines(@builder.get_path("download_project_ver_files") + @fileinfo["project"], chomp: true)
            
             @builder.force_update = true if !compare_versions("0.0",ver[0],@fileinfo["project_version"])
             
             if @builder.force_update
             
-             FileUtils.remove_file @builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"] if File.exists?(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"])
+             FileUtils.remove_file @builder.get_path("download_project_ver_files") + @fileinfo["project"] if File.exists?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
             
-             download_project_ver_file = File.new(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"],"w")
+             download_project_ver_file = File.new(@builder.get_path("download_project_ver_files") + @fileinfo["project"],"w")
             
              download_project_ver_file.write(@fileinfo["project_version"])
             
@@ -3367,11 +3371,11 @@ class Buildfile
              
              @builder.get_src(@builder.url_to_src,@fileinfo["project"])
              
-             Dir.mkdir(@builder.get_path_for_functions("download_project_ver_files")) unless File.exists?(@builder.get_path_for_functions("download_project_ver_files"))
+             Dir.mkdir(@builder.get_path("download_project_ver_files")) unless File.exists?(@builder.get_path("download_project_ver_files"))
              
-             unless File.exists?(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"])
+             unless File.exists?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
              
-              download_project_ver_file = File.new(@builder.get_path_for_functions("download_project_ver_files") + @fileinfo["project"],"w")
+              download_project_ver_file = File.new(@builder.get_path("download_project_ver_files") + @fileinfo["project"],"w")
              
               download_project_ver_file.write(@fileinfo["project_version"])
              
