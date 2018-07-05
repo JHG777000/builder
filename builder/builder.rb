@@ -831,6 +831,8 @@ class BuildNinjaFile
        
         unless system("./#{@path_to_ninja}")
             
+            puts "NOTE FROM BUILDFILE: #{@builder.buildfile_error_string}\n"
+            
             puts "Ninja Failed."
             
             puts "Make sure the selected toolchain: #{@toolchain} is properly installed."
@@ -865,6 +867,21 @@ class BuildFunctions
        
        puts msg
        
+    end
+    
+    def set_buildfile_error_string(string)
+        
+       unless string.class.name == "String"
+           
+           puts "set_buildfile_error_string function needs a string."
+           
+           puts "Builder shutting down..."
+           
+           exit(1)
+       end
+       
+       @builder.buildfile_error_string = string
+        
     end
     
     def setup(program,setup_name,dest_dir)
@@ -1205,6 +1222,8 @@ class Builder
  attr_reader :allow_extern_exec
  
  attr_reader :allowed_external_function
+ 
+ attr_accessor :buildfile_error_string
  
  attr_accessor :download_project
  
@@ -1567,6 +1586,8 @@ class Builder
      @OS = GetOS.new
      
      @version = "1.0"
+     
+     @buildfile_error_string = ""
      
      @selected_build = selected_build
      
@@ -3194,6 +3215,8 @@ class Buildfile
         @parse_hash["include"] = method(:parse_include)
         
         @parse_hash["message"] = method(:parse_function)
+        
+        @parse_hash["set_buildfile_error_string"] = method(:parse_function)
         
         @parse_hash["setup"] = method(:parse_function)
         
