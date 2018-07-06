@@ -831,7 +831,7 @@ class BuildNinjaFile
        
         unless system("./#{@path_to_ninja}")
             
-            puts "NOTE FROM BUILDFILE: #{@builder.buildfile_error_string}\n"
+            puts "NOTE FROM BUILDFILE: #{@builder.buildfile_error_string}\n" unless @builder.buildfile_error_string == nil
             
             puts "Ninja Failed."
             
@@ -1587,7 +1587,7 @@ class Builder
      
      @version = "1.0"
      
-     @buildfile_error_string = ""
+     @buildfile_error_string = nil
      
      @selected_build = selected_build
      
