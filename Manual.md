@@ -71,7 +71,7 @@ The url\_to_src value must be set in the buildfile. Will download a project only
 	
 	 Download the project from the given buildfile, build with the given buildfile.
 	 
-   The url\_to\_src value must be set in the buildfile. Also, after the url\_to_src value is set, the resources directory becomes the  downloaded source directory. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the version stored in the downloaded project version file is less than the downloaded buildfile's project version.
+   The url\_to\_src value must be set in the buildfile. Also, after the url\_to_src value is set, the resources directory becomes the  downloaded source directory. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the version stored in the downloaded project version file is less than the given buildfile's project version.
 
 ### -a, --allow\_extern_exec
 	
