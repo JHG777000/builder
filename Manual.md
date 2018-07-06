@@ -64,7 +64,7 @@ The ninja directory exists with the path: "project/.build/ninja/os". If the curr
 	
 	 Give a URL to a buildfile for a project to be downloaded and built.
 	 
-The url\_to_src value must be set in the buildfile. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the downloaded buildfile's project version is less than the online buildfile's project version.
+The url\_to_src value must be set in the buildfile. Will download a project only once, however, will update a project by deleting and redownloading the current downloaded source, if the downloaded buildfile's project version is less than the online buildfile's project version. Overrides the -f flag, and filename becomes the URL.
 	 
 ### -d, --download_project
 	
