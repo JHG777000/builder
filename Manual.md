@@ -668,10 +668,14 @@ Launch the program represented by the given output object.
 
 Launch cannot pass command line arguments to the program to be launched.
 
+Launch will terminate builder on failure.
+
 	run(path).
 	
 Run the program at the given file path(a string).
 
 Run can pass command line arguments to the program to be run.
+
+Run will will not terminate builder on failure, but will produce an error message.
 
 If the -a flag is not given, the run function will append "./" to the start of its input before executing.
