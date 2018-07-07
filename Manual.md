@@ -601,7 +601,24 @@ This is a list of all functions in builder:
 	
 The message function prints string to standard output. It will add a newline.
 
-	setup(program,setup_name,dest_dir).
+
+    set_buildfile_error_string(string).
+    
+The set\_buildfile\_error\_string function sets a string to be displayed if the build should fail in form of:
+
+    NOTE FROM BUILDFILE: This buildfile requires additional steps,
+    before a build can be successful.
+
+    Ninja Failed.
+	
+    Make sure the selected toolchain: is properly installed.
+    
+    Check the documentation for the given buildfile: and/or its project.
+    
+The above would be set up with: "set\_buildfile\_error\_string("This buildfile requires additional steps,
+    before a build can be successful.")".
+
+    setup(program,setup_name,dest_dir).
 	
 The setup function, sets up a program that is dependent on dynamic
 libraries, such that the exe file and all  dynamic
