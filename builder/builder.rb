@@ -1018,6 +1018,18 @@ class BuildFunctions
         
     end
     
+    def terminate(msg)
+        
+        puts "BUILDFILE HAS TERMINATED: " + msg if msg != nil && msg.class.name == "String"
+        
+        puts "BUILDFILE HAS TERMINATED." if msg == nil || msg.class.name != "String"
+        
+        puts "Builder shutting down..."
+        
+        exit(1)
+        
+    end
+    
     def launch(output)
         
         unless output.class.name == "Output"
@@ -3235,6 +3247,8 @@ class Buildfile
         @parse_hash["clean_output"] = method(:parse_function)
         
         @parse_hash["remove"] = method(:parse_function)
+        
+        @parse_hash["terminate"] = method(:parse_function)
         
         @parse_hash["launch"] = method(:parse_function)
         

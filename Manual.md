@@ -604,7 +604,7 @@ The message function prints string to standard output. It will add a newline.
 
     set_buildfile_error_string(string).
     
-The set\_buildfile\_error\_string function sets a string to be displayed if the build should fail in form of:
+The set\_buildfile\_error\_string function sets a string to be displayed if the build should fail in the form of:
 
     NOTE FROM BUILDFILE: This buildfile requires additional steps,
     before a build can be successful.
@@ -615,7 +615,7 @@ The set\_buildfile\_error\_string function sets a string to be displayed if the 
     
     Check the documentation for the given buildfile: and/or its project.
     
-The above would be set up with: "set\_buildfile\_error\_string("This buildfile requires additional steps,
+The above would be done with: "set\_buildfile\_error\_string("This buildfile requires additional steps,
     before a build can be successful.")".
 
     setup(program,setup_name,dest_dir).
@@ -678,6 +678,16 @@ Change the current working directory to directory(a directory name).
 	display_working_directory().
 	
 Prints the path of the current working directory to standard output.
+
+	terminate(msg).
+	
+The terminate function terminates builder and displays a string in the form of:
+
+    BUILDFILE HAS TERMINATED: This buildfile requires additional steps,
+    before a build can be successful, and as such has terminated.
+    
+The above would be done with: "terminate("This buildfile requires additional steps,
+    before a build can be successful, and as such has terminated.")".
 
 	launch(output).
 	
