@@ -225,7 +225,7 @@ The files object takes any number of file paths or names. When used as an input 
 
 The following are source file extensions supported by builder and the files object:
 
-	c, cc, cpp, c++, cxx, C, m, mm
+	c, cc, cpp, c++, cxx, C, m, mm, s, asm
 	
 Files with these extensions are viewed as source files, and turned into object files.
 
