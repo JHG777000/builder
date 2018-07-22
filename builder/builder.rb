@@ -43,7 +43,7 @@ class BuildNinjaFile
                 
                 @objects.push  dirname + "/" + entry if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
                 
-                @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm"
+                @sources.push dirname + "/" + entry if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm" || ext[ext.length-1] == "s" || ext[ext.length-1] == "asm"
                 
             end
             
@@ -62,7 +62,7 @@ class BuildNinjaFile
            
             @objects.push  @path_to_resources + file if ext[ext.length-1] == "o" || ext[ext.length-1] == "a" ||  ext[ext.length-1] == "obj"  || ext[ext.length-1] == "lib" || ext[ext.length-1] == "dylib" || ext[ext.length-1] == "so"
             
-            @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm"
+            @sources.push @path_to_resources + file if ext[ext.length-1] == "c"  || ext[ext.length-1] == "cc" || ext[ext.length-1] == "cpp" || ext[ext.length-1] == "c++" || ext[ext.length-1] == "cxx" || ext[ext.length-1] == "C" || ext[ext.length-1] == "m" || ext[ext.length-1] == "mm" || ext[ext.length-1] == "s" || ext[ext.length-1] == "asm"
             
             dirs @path_to_resources + file.chomp(".directory"), false if ext[ext.length-1] == "directory"
             
