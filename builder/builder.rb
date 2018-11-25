@@ -1002,6 +1002,8 @@ class BuildFunctions
     
     def remove(file,dirname)
     
+        return if file == nil || file == "" || file == " "
+         
         FileUtils.remove_file @builder.get_path_for_functions(dirname) + file
     
     end
