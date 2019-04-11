@@ -1100,6 +1100,48 @@ class BuildFunctions
         puts "Ran the program or script with this path: '#{path}'." unless failed_to_run
         
     end
+    
+    def format(string)
+        
+        unless string.class.name == "String"
+            
+            puts "format function needs a string."
+            
+            puts "Builder shutting down..."
+            
+            exit(1)
+            
+        end
+        
+        i = 1
+        
+        outstring = " "
+        
+        outstring[0] = string[0]
+        
+        while i < string.length
+            
+            outstring += string[i]
+            
+            outstring += '__' if string[i] == '_'
+            
+            i+=1
+            
+        end
+        
+        i = 0
+        
+        while i < outstring.length
+           
+           string << " " if i >= string.length
+           
+           string[i] = outstring[i]
+           
+           i+=1
+           
+        end
+        
+    end
         
 end
 
@@ -3259,6 +3301,8 @@ class Buildfile
         @parse_hash["change_working_directory_to"] = method(:parse_function)
         
         @parse_hash["display_working_directory"] = method(:parse_function)
+        
+        @parse_hash["format"] = method(:parse_function)
         
     end
     

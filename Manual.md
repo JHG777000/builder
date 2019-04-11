@@ -706,3 +706,7 @@ Run can pass command line arguments to the program to be run.
 Run will will not terminate builder on failure, but will produce an error message.
 
 If the -a flag is not given, the run function will append "./" to the start of its input before executing.
+
+	format(filepath).
+	
+Format a string(filepath) for options string format, to pass a filepath between subprojects.
