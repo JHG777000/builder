@@ -3554,7 +3554,7 @@ class Buildfile
           
       end
       
-      if c == '.' && @balance == 0
+      if c == '.' && @balance == 0 && !is_string
           
           end_of_line = true
           
