@@ -1301,15 +1301,15 @@ class Builder
      puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      
      if @OS.is_windows?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip"
      end
      
      if @OS.is_mac?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip"
      end
      
      if @OS.is_linux?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip"
      end
      
      ninja_url = URI.encode(ninja_url) unless init
