@@ -1,4 +1,3 @@
-
 #Copyright (c) 2018-2019 Jacob Gordon. All rights reserved.
 
 #Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -3677,6 +3676,10 @@ OptionParser.new do |opts|
     
     opts.banner = "Usage: builder [options]"
     
+    opts.on("-v", "--version", "Version of builder.") do |v|
+        options[:version] = v
+    end
+    
     opts.on("-f", "--filename=name", "Filename of the buildfile. Default filename is 'buildfile'.") do |f|
         options[:filename] = f
     end
@@ -3737,6 +3740,11 @@ options[:output_directory] = options[:output_directory] + "/" unless options[:ou
 Dir.mkdir("#{options[:output_directory]}") unless File.exists?("#{options[:output_directory]}") unless options[:output_directory] == nil
 
 builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory], options[:force_update], options[:external_move_or_copy]
+
+if options[:version]
+    puts "Builder version: #{builder.version}."
+    exit
+end
 
 #puts Dir.pwd
 
