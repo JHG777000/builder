@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ $OSTYPE == darwin* ]]; then
- usr/local/opt/ruby/bin/ruby ~/builder/builder/builder.rb $@
+ /usr/local/opt/ruby/bin/ruby ~/builder/builder/builder.rb $@
 else
  ruby ~/builder/builder/builder.rb $@
 fi
