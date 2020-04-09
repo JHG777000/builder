@@ -57,7 +57,7 @@ builder provides an easy to use syntax to describe the build process, as can be 
 
 ## Installing 
 
-Download or clone builder, place builder in your home directory. The folder containing builder should itself be named 'builder', such that 'builder.rb' is at '~/builder/builder/builder.rb'. Add the 'run' directory to your system path. Make sure you have that latest version of [ruby][3]. On Mac, its recommended that you use [brew][4] to get the latest version of ruby.
+Download or clone builder, place builder in your home directory. The folder containing builder should itself be named 'builder', such that 'builder.rb' is at '~/builder/builder/builder.rb'. Add the 'run' directory to your system path. Make sure you have that latest version of [ruby][3]. On Mac, its recommended that you use [brew][4] to get ruby version 2.6.6.
 
  [3]:https://www.ruby-lang.org/en/
  [4]:https://brew.sh
