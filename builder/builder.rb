@@ -1,4 +1,4 @@
-#Copyright (c) 2018-2019 Jacob Gordon. All rights reserved.
+#Copyright (c) 2018-2020 Jacob Gordon. All rights reserved.
 
 #Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -1300,15 +1300,15 @@ class Builder
      puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      
      if @OS.is_windows?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-win.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip"
      end
      
      if @OS.is_mac?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-mac.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-mac.zip"
      end
      
      if @OS.is_linux?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip"
      end
      
      ninja_url = URI.encode(ninja_url) unless init
