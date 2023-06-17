@@ -12,45 +12,26 @@ builder provides an easy to use syntax to describe the build process, as can be 
  Example of a buildfile for a simple project: 
 	
 	project := "My Project".
-
 	project_version := "1.0".
-
 	buildfile_version := "1.0".
 
 	 build mybuild.
-
  	  options.
-
   	   on toolchain_select("-t", "--toolchain=tool", "Select toolchain, clang or gcc.").
-
  	  end options.
-
  	  get toolchain_select.
- 
  	  if ( toolchain_select != "clang" && toolchain_select != "gcc" ).
-
   	   var toolchain_select := "clang".
-
  	  end if.
-
 	  files MyAppSourceFiles("foo.c").
-
  	  sources MyAppSource(MyAppSourceFiles).
-
  	  compiler MyCompilerFlags("-Wall").
-
  	  toolchain MyToolChain(toolchain_select,MyCompilerFlags).
-
  	  output MyApp("application",MyAppSource,MyToolChain).
-
  	  output MyApp2("application",MyAppSource,MyToolChain).
-
  	  message("hello, world.").
-	
  	  launch(MyApp).
-
  	  launch(MyApp2).
-
 	end build.
 
 
@@ -72,7 +53,8 @@ builder's manual is [here][5].
 
 ## Platform Support
 
-builder plans to fully support Windows, macOS, and linux. Currently builder is known to work(more or less) under Windows, and macOS. builder is untested on linux.
+builder plans to fully support Windows, macOS, and linux. Currently builder is known to work(more or less) under Windows, macOS, and linux.
+Should work with Ruby 3.0 and up.
 
 ## Toolchain Support
 
