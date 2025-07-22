@@ -862,7 +862,7 @@ def get_root_dir_name(base_name)
     return root_dir_name
   end
  
- def get_src(url_to_src,project)
+def get_src(url_to_src,project)
      init = false
      init = true if File.exist?("#{get_path('project')}#{project}_src")
      puts "Downloading project: #{project} to #{get_path('project')}#{project}_src..." unless init
@@ -875,20 +875,7 @@ def get_root_dir_name(base_name)
              zipfile.each do |entry|
                  unless File.exist?("#{get_path('project')}#{project}_src/#{entry.name}")
                      begin
-                      #puts "entry name: #{entry.name}"
-                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}")
-                      rescue 
-                      #get_root_dir_name
-                      #puts "Name Dir"
-                      #puts entry.name
-                      #puts get_root_dir_name(entry.name)
-                      #Dir.mkdir("#{get_path('project')}#{project}_src/#{get_root_dir_name(entry.name)}") unless File.exist?("#{get_path('project')}#{project}_src/#{get_root_dir_name(entry.name)}") 
-                      #zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") unless File.exist?("#{get_path('project')}#{project}_src/#{entry.name}") 
-                      #Work around for glslangValidator(bad code)
-                      Dir.mkdir("#{get_path('project')}#{project}_src/bin") unless File.exist?("#{get_path('project')}#{project}_src/bin") 
-                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") unless File.exist?("#{get_path('project')}#{project}_src/include") 
-                      Dir.mkdir("#{get_path('project')}#{project}_src/include") unless File.exist?("#{get_path('project')}#{project}_src/include") 
-                      Dir.mkdir("#{get_path('project')}#{project}_src/lib") unless File.exist?("#{get_path('project')}#{project}_src/lib") 
+                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") 
                      end
                  end
              end
