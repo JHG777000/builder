@@ -1,4 +1,4 @@
-#Copyright (c) 2018-2023 Jacob Gordon. All rights reserved.
+#Copyright (c) 2018-2025 Jacob Gordon. All rights reserved.
 
 #Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -7,6 +7,7 @@
 #FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 #SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 #TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 
 require "open-uri"
 require "optparse"
@@ -447,7 +448,7 @@ class BuildNinjaFile
    
    def write_file
        puts "Generating Ninja file..."
-       unless File.exists?("#{@path_to_ninja}")
+       unless File.exist?("#{@path_to_ninja}")
              FileUtils.remove_dir @path_to_ninja.chomp("ninja") unless @OS.is_windows?
              FileUtils.remove_dir @path_to_ninja.chomp("ninja.exe") if @OS.is_windows?
              puts "Ninja Missing..."
@@ -468,10 +469,10 @@ class BuildNinjaFile
             puts "Ninja Failed."
             puts "Make sure the selected toolchain: #{@toolchain} is properly installed."
             puts "Check the documentation for the given buildfile: '#{@buildfile.filename}' and/or its project."
-            FileUtils.remove_file Dir.pwd + "/build.ninja" if File.exists?(Dir.pwd + "/build.ninja")
+            FileUtils.remove_file Dir.pwd + "/build.ninja" if File.exist?(Dir.pwd + "/build.ninja")
             exit(1)
         end
-        FileUtils.remove_file Dir.pwd + "/build.ninja" if File.exists?(Dir.pwd + "/build.ninja")
+        FileUtils.remove_file Dir.pwd + "/build.ninja" if File.exist?(Dir.pwd + "/build.ninja")
         puts "Ninja Succeeded."
         puts "Done building output: '#{name}'."
    end
@@ -558,7 +559,7 @@ class BuildFunctions
     end
     
     def clean_output(output)
-        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output" if File.exists?(@builder.get_path("build")  + "#{output}_output") 
+        FileUtils.remove_dir @builder.get_path("build") + "#{output}_output" if File.exist?(@builder.get_path("build")  + "#{output}_output") 
     end
     
     def remove(file,dirname)
@@ -780,7 +781,7 @@ class Builder
 
  def get_ninja(project)
      init = false
-     init = true if File.exists?("#{get_path('ninja')}") || @ninja_path != nil
+     init = true if File.exist?("#{get_path('ninja')}") || @ninja_path != nil
      puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      if @OS.is_windows?
          ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip"
@@ -793,24 +794,24 @@ class Builder
      end
      ninja_url = ninja_url unless init
      ninja = URI.parse(ninja_url).read unless init
-     Dir.mkdir("#{get_path('project')}") unless File.exists?("#{get_path('project')}")
-     Dir.mkdir("#{get_path('project')}.build") unless File.exists?("#{get_path('project')}/.build")
-     Dir.mkdir("#{get_path('project')}.build/#{project}") unless File.exists?("#{get_path('project')}/.build/#{project}")
-     Dir.mkdir("#{get_path('project')}.build/ninja") unless File.exists?("#{get_path('project')}/.build/ninja")
-     Dir.mkdir("#{get_path('ninja')}") unless File.exists?("#{get_path('ninja')}")
+     Dir.mkdir("#{get_path('project')}") unless File.exist?("#{get_path('project')}")
+     Dir.mkdir("#{get_path('project')}.build") unless File.exist?("#{get_path('project')}/.build")
+     Dir.mkdir("#{get_path('project')}.build/#{project}") unless File.exist?("#{get_path('project')}/.build/#{project}")
+     Dir.mkdir("#{get_path('project')}.build/ninja") unless File.exist?("#{get_path('project')}/.build/ninja")
+     Dir.mkdir("#{get_path('ninja')}") unless File.exist?("#{get_path('ninja')}")
      file = File.new("#{get_path('ninja')}ninja.zip","wb") unless init
      file.write(ninja) unless init
-     if File.exists?("#{get_path('ninja')}ninja.zip")
+     if File.exist?("#{get_path('ninja')}ninja.zip")
        Zip::File.open("#{get_path('ninja')}ninja.zip") do |zipfile|
            zipfile.each do |entry|
-               unless File.exists?("#{get_path('ninja')}#{entry.name}")
+               unless File.exist?("#{get_path('ninja')}#{entry.name}")
                    zipfile.extract(entry, "#{get_path('ninja')}#{entry.name}")
                end 
            end  
        end
      end
      begin
-      FileUtils.remove_file "#{get_path('ninja')}ninja.zip" if File.exists?("#{get_path('ninja')}ninja.zip")
+      FileUtils.remove_file "#{get_path('ninja')}ninja.zip" if File.exist?("#{get_path('ninja')}ninja.zip")
       rescue
      end
      @ninja_path = "#{get_path('ninja')}ninja" if @ninja_path == nil && !@OS.is_windows?
@@ -863,25 +864,38 @@ def get_root_dir_name(base_name)
  
  def get_src(url_to_src,project)
      init = false
-     init = true if File.exists?("#{get_path('project')}#{project}_src")
+     init = true if File.exist?("#{get_path('project')}#{project}_src")
      puts "Downloading project: #{project} to #{get_path('project')}#{project}_src..." unless init
      src = URI.parse(url_to_src).read unless init
-     Dir.mkdir("#{get_path('project')}#{project}_src") unless File.exists?("#{get_path('project')}#{project}_src")
+     Dir.mkdir("#{get_path('project')}#{project}_src") unless File.exist?("#{get_path('project')}#{project}_src")
      file = File.new("#{get_path('project')}#{project}_src/#{project}_src.zip","wb") unless init
      file.write(src) unless init
-     if File.exists?("#{get_path('project')}#{project}_src/#{project}_src.zip")
+     if File.exist?("#{get_path('project')}#{project}_src/#{project}_src.zip")
          Zip::File.open("#{get_path('project')}#{project}_src/#{project}_src.zip") do |zipfile|
              zipfile.each do |entry|
-                 unless File.exists?("#{get_path('project')}#{project}_src/#{entry.name}")
+                 unless File.exist?("#{get_path('project')}#{project}_src/#{entry.name}")
                      begin
-                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") 
+                      #puts "entry name: #{entry.name}"
+                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}")
+                      rescue 
+                      #get_root_dir_name
+                      #puts "Name Dir"
+                      #puts entry.name
+                      #puts get_root_dir_name(entry.name)
+                      #Dir.mkdir("#{get_path('project')}#{project}_src/#{get_root_dir_name(entry.name)}") unless File.exist?("#{get_path('project')}#{project}_src/#{get_root_dir_name(entry.name)}") 
+                      #zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") unless File.exist?("#{get_path('project')}#{project}_src/#{entry.name}") 
+                      #Work around for glslangValidator(bad code)
+                      Dir.mkdir("#{get_path('project')}#{project}_src/bin") unless File.exist?("#{get_path('project')}#{project}_src/bin") 
+                      zipfile.extract(entry, "#{get_path('project')}#{project}_src/#{entry.name}") unless File.exist?("#{get_path('project')}#{project}_src/include") 
+                      Dir.mkdir("#{get_path('project')}#{project}_src/include") unless File.exist?("#{get_path('project')}#{project}_src/include") 
+                      Dir.mkdir("#{get_path('project')}#{project}_src/lib") unless File.exist?("#{get_path('project')}#{project}_src/lib") 
                      end
                  end
              end
          end
      end
      begin
-         FileUtils.remove_file "#{get_path('project')}/#{project}_src/#{project}_src.zip" if File.exists?("#{get_path('project')}/#{project}_src/#{project}_src.zip")
+         FileUtils.remove_file "#{get_path('project')}/#{project}_src/#{project}_src.zip" if File.exist?("#{get_path('project')}/#{project}_src/#{project}_src.zip")
          rescue
      end
      path = "#{get_path('project')}#{project}_src"
@@ -895,7 +909,7 @@ def get_root_dir_name(base_name)
  
  def setup(output,dest_name,dest_dir)
      dest_path = get_path_for_functions(dest_dir) + dest_name + "/"
-     Dir.mkdir get_path_for_functions(dest_dir) + dest_name unless File.exists? get_path_for_functions(dest_dir) + dest_name
+     Dir.mkdir get_path_for_functions(dest_dir) + dest_name unless File.exist? get_path_for_functions(dest_dir) + dest_name
      FileUtils.copy output.path_to_output, dest_path
      exe = output.path_to_output.split("/")
      exe = exe[exe.length-1]
@@ -939,7 +953,7 @@ def get_root_dir_name(base_name)
      return nil if dirname == "resources"
      return nil if dirname == "working"
      return nil if dirname == "output"
-     FileUtils.remove_dir get_path(dirname) if File.exists?(get_path(dirname))
+     FileUtils.remove_dir get_path(dirname) if File.exist?(get_path(dirname))
  end
  
  def chdir(dirname)
@@ -1011,7 +1025,7 @@ def get_root_dir_name(base_name)
  def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory,force_update,allowed_external_function)
      #init builder
      @OS = GetOS.new
-     @version = "1.05"
+     @version = "1.5.02"
      @buildfile_error_string = nil
      @selected_build = selected_build
      build_options = process_build_options_string(build_options) unless build_options == nil
@@ -1580,7 +1594,7 @@ class Buildfile
         puts "On line: #{@line_number}, expected 'file'."
         exit(1)
      end
-     string += "#{line[1]} = File.exists?(#{line[4]})\n"
+     string += "#{line[1]} = File.exist?(#{line[4]})\n"
      @buildstring[@current_build] += string unless @buildstring[@current_build] == nil
     end
     
@@ -1942,7 +1956,7 @@ class Buildfile
             ver = IO.readlines(@builder.get_path("download_project_ver_files") + @fileinfo["project"], chomp: true)
             @builder.force_update = true if !compare_versions("0.0",ver[0],@fileinfo["project_version"])
             if @builder.force_update
-             FileUtils.remove_file @builder.get_path("download_project_ver_files") + @fileinfo["project"] if File.exists?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
+             FileUtils.remove_file @builder.get_path("download_project_ver_files") + @fileinfo["project"] if File.exist?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
              download_project_ver_file = File.new(@builder.get_path("download_project_ver_files") + @fileinfo["project"],"w")
              download_project_ver_file.write(@fileinfo["project_version"])
              download_project_ver_file.close
@@ -1954,7 +1968,7 @@ class Buildfile
          if !compare_versions("0.0",@project_version_max,@fileinfo["project_version"]) || (@builder.force_update && @downloaded) || (@builder.force_update && @builder.download_project)
             puts "Updating project '#{@fileinfo['project']}'..." 
             file.close if @builder.url_to_buildfile == nil
-            FileUtils.remove_dir "#{@builder.get_path('project')}#{@fileinfo['project']}_src" if File.exists?("#{@builder.get_path('project')}#{@fileinfo['project']}_src")
+            FileUtils.remove_dir "#{@builder.get_path('project')}#{@fileinfo['project']}_src" if File.exist?("#{@builder.get_path('project')}#{@fileinfo['project']}_src")
             @builder.url_to_buildfile = @save_url_to_buildfile
             @project_version_max = nil
             @builder.force_update = false
@@ -1967,8 +1981,8 @@ class Buildfile
              @filename = ext[ext.length-1]
              @builder.get_ninja @fileinfo["project"]
              @builder.get_src(@builder.url_to_src,@fileinfo["project"])
-             Dir.mkdir(@builder.get_path("download_project_ver_files")) unless File.exists?(@builder.get_path("download_project_ver_files"))
-             unless File.exists?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
+             Dir.mkdir(@builder.get_path("download_project_ver_files")) unless File.exist?(@builder.get_path("download_project_ver_files"))
+             unless File.exist?(@builder.get_path("download_project_ver_files") + @fileinfo["project"])
               download_project_ver_file = File.new(@builder.get_path("download_project_ver_files") + @fileinfo["project"],"w")
               download_project_ver_file.write(@fileinfo["project_version"])
               download_project_ver_file.close
@@ -2000,19 +2014,20 @@ class Buildfile
      while i < line.length
       c = line[i]
       #puts "Hello:#{c}"
-      if c == "@" 
+      if c == "@" && !is_string
          puts "On line: #{@line_number}, symbol '@' is not allowed."
          exit(1)
       end
       noline +=1 if noline < 2 && !is_string && c == '/'
       noline = 0 if i == 0 && c != '/'
+      noline = 0 if c != '/' && noline == 1
       if noline >= 2
        finline.pop if c == '/'
        i+=1
        next
       end
-      @balance+=1 if c == '('
-      @balance-=1 if c == ')'
+      @balance+=1 if c == '(' && !is_string
+      @balance-=1 if c == ')' && !is_string
       if @balance < 0
           puts "Error: non-balanced: ')'."
           exit(1)
@@ -2141,7 +2156,7 @@ end.parse!
 options[:filename] = "buildfile" if options[:filename] == nil
 options[:filename] = options[:url_to_buildfile] unless options[:url_to_buildfile] == nil
 options[:output_directory] = options[:output_directory] + "/" unless options[:output_directory] == nil
-Dir.mkdir("#{options[:output_directory]}") unless File.exists?("#{options[:output_directory]}") unless options[:output_directory] == nil
+Dir.mkdir("#{options[:output_directory]}") unless File.exist?("#{options[:output_directory]}") unless options[:output_directory] == nil
 
 builder = Builder.new nil, options[:selected_build], options[:build_options], options[:output_directory], nil, options[:url_to_buildfile], options[:allow], options[:download_project], options[:local_subprojects_force], options[:global_subprojects_force], options[:output_directory], options[:force_update], options[:external_move_or_copy]
 
