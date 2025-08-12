@@ -784,13 +784,13 @@ class Builder
      init = true if File.exist?("#{get_path('ninja')}") || @ninja_path != nil
      puts "Downloading Ninja to #{get_path('project')}.build/ninja..." unless init
      if @OS.is_windows?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-win.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-win.zip"
      end
      if @OS.is_mac?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-mac.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-mac.zip"
      end
      if @OS.is_linux?
-         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip"
+         ninja_url = "https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-linux.zip"
      end
      ninja_url = ninja_url unless init
      ninja = URI.parse(ninja_url).read unless init
@@ -1012,7 +1012,7 @@ def get_src(url_to_src,project)
  def initialize(ninja_path,selected_build,build_options,superproject,path_to_subproject,url_to_buildfile,allow_extern_exec,download_project,local_subprojects_force,global_subprojects_force,output_directory,force_update,allowed_external_function)
      #init builder
      @OS = GetOS.new
-     @version = "1.5.02"
+     @version = "1.5.03"
      @buildfile_error_string = nil
      @selected_build = selected_build
      build_options = process_build_options_string(build_options) unless build_options == nil
